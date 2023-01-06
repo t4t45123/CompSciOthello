@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6755069950232390741}
   - component: {fileID: 693794519324125801}
   - component: {fileID: 6078185645248816574}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,7 +109,7 @@ GameObject:
   - component: {fileID: 8527043347803675476}
   - component: {fileID: 7688115450121800186}
   - component: {fileID: 8865178704118885760}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 8771531516721322791}
   - component: {fileID: 2961852830853772664}
   - component: {fileID: 2953052618825902062}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Board
   m_Icon: {fileID: 0}
@@ -303,7 +303,7 @@ GameObject:
   - component: {fileID: 666063677402864363}
   - component: {fileID: 3887090255239837278}
   - component: {fileID: 7646307699651153917}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -397,7 +397,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 25660827021803773}
-  m_Layer: 0
+  - component: {fileID: 6375848808445932760}
+  m_Layer: 6
   m_Name: BoardPiece
   m_TagString: Board
   m_Icon: {fileID: 0}
@@ -422,8 +423,21 @@ Transform:
   - {fileID: 5510168289233934847}
   - {fileID: 8975667732505159476}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6375848808445932760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7783566745136194883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f9b40d3827d2454d80e448811c0ec98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cellPos: {x: 0, y: 0}
 --- !u!1 &8213597486513870338
 GameObject:
   m_ObjectHideFlags: 0
@@ -436,7 +450,7 @@ GameObject:
   - component: {fileID: 8391837551560982528}
   - component: {fileID: 1355247105132610853}
   - component: {fileID: 1639289361212243370}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
