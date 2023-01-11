@@ -8,7 +8,7 @@ public class BoardSpawner : MonoBehaviour
     [SerializeField] GameObject cell;
     Vector3 cellPos;
     public Transform cellParent;
-    
+    public Manager boardManager;
     void Start()
     {
         float cellWidth = cell.transform.localScale.x;
@@ -20,6 +20,10 @@ public class BoardSpawner : MonoBehaviour
                 cellScript.cellPos = new Vector2(i,j);
             }
         }
+        boardManager.instancePiece (new Vector2(3,3), 1, boardManager.pieceArr);
+        boardManager.instancePiece (new Vector2(3,4), 0, boardManager.pieceArr);
+        boardManager.instancePiece (new Vector2(4,3), 0, boardManager.pieceArr);
+        boardManager.instancePiece (new Vector2(4,4), 1, boardManager.pieceArr);
     }
 
     // Update is called once per frame

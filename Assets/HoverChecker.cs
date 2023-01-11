@@ -21,5 +21,12 @@ public class HoverChecker : MonoBehaviour
             boardManager.instancePiece(boardManager.currentMousePos, boardManager.currentTurn, boardManager.pieceArr);
             boardManager.ChangeTurn(boardManager.currentTurn);
         }
+        if (Input.GetMouseButtonUp(1)) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    Debug.Log(boardManager.pieceArr[i,j].colour);
+                }
+            }
+        }
     }
 }

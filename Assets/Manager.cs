@@ -56,7 +56,7 @@ public class Manager : MonoBehaviour
         }
     }
     void Awake() { // called at te very beginning, and initializes the piece array with null instances of a class of pieces.
-        pieces tempPiece = new pieces(null, 0 , new Vector2 (-1, -1));
+        pieces tempPiece = new pieces(null, 9 , new Vector2 (-1, -1));
         
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
@@ -67,14 +67,14 @@ public class Manager : MonoBehaviour
         pieceMat[1] = blackMat;
     }
     public void instancePiece(Vector2 pos, int colour, pieces[,] board) {
-        GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f, pos.y), Quaternion.identity, currentTurn == 0 ? whiteParent : blackParent); // creates a new peice based on the inputed location.
+        GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f, pos.y), Quaternion.identity, colour == 0 ? whiteParent : blackParent); // creates a new peice based on the inputed location.
         lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; // sets the colour of the piece to the colour inputed.
         board[(int)pos.x,(int)pos.y] = new pieces(lastCreated, colour,pos);
     }
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
         currentTurn = turn == 0 ? 1 : 0;
     }
-    Vector2 intToDir(int dir) {
+    Vector2 intToDir(int dir) { // returns a vector based on a int that is inputed
         switch(dir) {
             case 0:
             return new Vector2 (-1,1);
@@ -98,21 +98,26 @@ public class Manager : MonoBehaviour
     public int[] getLine(int dir, Vector2 pos, pieces[,] board) { // returns an array of ints, which correlate to colours in the row.
         int[] coloursInRow = new int[8];
         for (int i = 0; i < 8; i++) {
-            if (pos.x >= 0 && pos.x <= 7 && pos.y >= 0 && pos.y <= 7) {
+            if (pos.x >= 0 && pos.x <= 7 && 0 <= pos.y && pos.y <= 7) {
                 coloursInRow[i] = board[(int)pos.x, (int)pos.y].colour;
             }
             pos += intToDir(dir);
         }
+        string tempString = "";
+        foreach (int item in coloursInRow) {
+            tempString += item;
+        }
+        Debug.Log(tempString + "\n" + dir + "\n\n");
         return coloursInRow;
     }
-    public placeCheck CheckPlace(int dir, Vector2 pos, int colour, pieces[,] board) 
+    public placeCheck CheckPlace(int dir, Vector2 pos, int colour, pieces[,] board) // checks if there is a piece that outflanks another peice.
     {
         int[] row = new int[8];
-        int oppCol = colour == 2?1:2;
+        int oppCol = colour == 1?0:1;
         placeCheck tempPlaceCheck = new placeCheck(false,0,pos,dir,colour);
 
         row = getLine(dir, pos, board);
-        if (row[1] == 0) {
+        if (row[1] == 9) {
             return tempPlaceCheck;
         }
         else if(row[1] == oppCol) {
@@ -133,7 +138,7 @@ public class Manager : MonoBehaviour
         return tempPlaceCheck;
 
     } 
-    public bool CheckPlace360 (Vector2 pos,int colour, pieces[,] board) {
+    public bool CheckPlace360 (Vector2 pos,int colour, pieces[,] board) { // performs the checkplace function for each direction.
         for (int i = 0; i < 8; i++) {
             if (CheckPlace(i,pos, colour, board).canPlace) {
                 return true;
