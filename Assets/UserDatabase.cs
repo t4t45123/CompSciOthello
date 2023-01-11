@@ -26,6 +26,14 @@ public class UserDatabase : MonoBehaviour
         dbCommandInsertValue.ExecuteReader(); 
         dbConnection.Close();
     }
+    IDbConnection OpenDatabase() 
+    {
+        // Open a connection to the database.
+        string dbUri = "URI=file:" + Application.persistentDataPath + @"\userData.db"; 
+        IDbConnection dbConnection = new SqliteConnection(dbUri); 
+        dbConnection.Open(); 
+        return dbConnection;
+    }
     int GetMaxId() { // returns the bigest ID in the users table 
         IDbConnection dbConnection = OpenDatabase(); 
         IDbCommand dbCommandReadValues = dbConnection.CreateCommand();
@@ -38,14 +46,7 @@ public class UserDatabase : MonoBehaviour
         return maxId;
         
     }
-    IDbConnection OpenDatabase() 
-    {
-        // Open a connection to the database.
-        string dbUri = "URI=file:" + Application.persistentDataPath + @"\userData.db"; 
-        IDbConnection dbConnection = new SqliteConnection(dbUri); 
-        dbConnection.Open(); 
-        return dbConnection;
-    }
+
 
     public bool compareUser(string user, string pass) { // this function finds an id that is linked to both a user and a password that is inputted
         userId = 0;

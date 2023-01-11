@@ -19,6 +19,7 @@ public class Manager : MonoBehaviour
         public Vector2 startPos;
         public int direction;
         public int Colour;
+
         public placeCheck (bool placeable, int end, Vector2 start, int dir, int col) {
             canPlace = placeable;
             endPos = end;
@@ -41,10 +42,6 @@ public class Manager : MonoBehaviour
     // scripts
     [SerializeField] HoverChecker hoverChecker;
     
-    void Start()
-    {
-        
-    }
     void Update() // called every frame
     {
         posSetter();
@@ -76,7 +73,12 @@ public class Manager : MonoBehaviour
         GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f,pos.y),Quaternion.identity, colour == 0? whiteParent : blackParent);
         lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; 
         board[(int)pos.x,(int)pos.y] = new pieces (lastCreated, colour,pos);
+        
         ChangeTurn(colour);    
+        }
+        for (int i =0; i < 8; i++) {
+            placeCheck check = CheckPlace(i, pos, colour, board);
+            changePeices(check,board);
         }
     }
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
@@ -154,6 +156,15 @@ public class Manager : MonoBehaviour
             }
         }
         return false;
+    }
+    void changePeices(placeCheck check, pieces[,] board)  {
+        Vector2 tempPos = check.startPos;
+        for (int i = 0; i < check.endPos; i++) {
+            board[(int)tempPos.x, (int)tempPos.y].colour = check.Colour;
+            board[(int)tempPos.x,(int)tempPos.y].piece.transform.GetComponent<Renderer>().material = check.Colour == 0 ? whiteMat:blackMat; 
+            tempPos += intToDir(check.direction);
+
+        }
     }
 
 }
