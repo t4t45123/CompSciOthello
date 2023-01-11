@@ -71,6 +71,14 @@ public class Manager : MonoBehaviour
         lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; // sets the colour of the piece to the colour inputed.
         board[(int)pos.x,(int)pos.y] = new pieces(lastCreated, colour,pos);
     }
+    public void mainPlace(Vector2 pos, int colour, pieces[,] board) {
+        if (CheckPlace360(pos, colour,board)) {
+        GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f,pos.y),Quaternion.identity, colour == 0? whiteParent : blackParent);
+        lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; 
+        board[(int)pos.x,(int)pos.y] = new pieces (lastCreated, colour,pos);
+        ChangeTurn(colour);    
+        }
+    }
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
         currentTurn = turn == 0 ? 1 : 0;
     }
@@ -127,6 +135,7 @@ public class Manager : MonoBehaviour
                 if (row[i] == colour) {
                     notFound = false;
                     placeCheck placecheck = new placeCheck(true, i , pos,dir,colour);
+                    return placecheck;
                 }
                 else if (row[i] == oppCol) {
                     i++;
