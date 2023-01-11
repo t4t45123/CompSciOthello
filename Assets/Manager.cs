@@ -13,6 +13,20 @@ public class pieces {
 
 public class Manager : MonoBehaviour
 {
+    public class placeCheck {
+        public bool canPlace;
+        public int endPos;
+        public Vector2 startPos;
+        public int direction;
+        public int Colour;
+        public placeCheck (bool placeable, int end, Vector2 start, int dir, int col) {
+            canPlace = placeable;
+            endPos = end;
+            startPos = start;
+            direction =  dir;
+            Colour = col;
+        }
+    }
     // vars
     public Material[] pieceMat = new Material[2];
     [SerializeField] Material blackMat;
@@ -60,4 +74,72 @@ public class Manager : MonoBehaviour
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
         currentTurn = turn == 0 ? 1 : 0;
     }
+    Vector2 intToDir(int dir) {
+        switch(dir) {
+            case 0:
+            return new Vector2 (-1,1);
+            case 1:
+            return new Vector2 (0,1);
+            case 2: 
+            return new Vector2 (1,1);
+            case 3:
+            return new Vector2 (1,0);
+            case 4:
+            return new Vector2 (1,-1);
+            case 5:
+            return new Vector2 (0,-1);
+            case 6:
+            return new Vector2 (-1,-1);
+            case 7:
+            return new Vector2 (-1,0);
+        }
+        return new Vector2 (0,0);
+    }
+    public int[] getLine(int dir, Vector2 pos, pieces[,] board) { // returns an array of ints, which correlate to colours in the row.
+        int[] coloursInRow = new int[8];
+        for (int i = 0; i < 8; i++) {
+            if (pos.x >= 0 && pos.x <= 7 && pos.y >= 0 && pos.y <= 7) {
+                coloursInRow[i] = board[(int)pos.x, (int)pos.y].colour;
+            }
+            pos += intToDir(dir);
+        }
+        return coloursInRow;
+    }
+    public placeCheck CheckPlace(int dir, Vector2 pos, int colour, pieces[,] board) 
+    {
+        int[] row = new int[8];
+        int oppCol = colour == 2?1:2;
+        placeCheck tempPlaceCheck = new placeCheck(false,0,pos,dir,colour);
+
+        row = getLine(dir, pos, board);
+        if (row[1] == 0) {
+            return tempPlaceCheck;
+        }
+        else if(row[1] == oppCol) {
+            bool notFound = true;
+            int i = 2;
+            while(notFound && i < 8) {
+                if (row[i] == colour) {
+                    notFound = false;
+                    placeCheck placecheck = new placeCheck(true, i , pos,dir,colour);
+                }
+                else if (row[i] == oppCol) {
+                    i++;
+                }else {
+                    return tempPlaceCheck;
+                }
+            }
+        }
+        return tempPlaceCheck;
+
+    } 
+    public bool CheckPlace360 (Vector2 pos,int colour, pieces[,] board) {
+        for (int i = 0; i < 8; i++) {
+            if (CheckPlace(i,pos, colour, board).canPlace) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

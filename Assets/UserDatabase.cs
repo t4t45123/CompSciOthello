@@ -43,7 +43,7 @@ public class UserDatabase : MonoBehaviour
         // Open a connection to the database.
         string dbUri = "URI=file:" + Application.persistentDataPath + @"\userData.db"; 
         IDbConnection dbConnection = new SqliteConnection(dbUri); 
-        dbConnection.Open(); // 6
+        dbConnection.Open(); 
         return dbConnection;
     }
 
