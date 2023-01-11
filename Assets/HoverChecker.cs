@@ -17,8 +17,8 @@ public class HoverChecker : MonoBehaviour
             HoverTransform = hit.transform;
             HoverObject = hit.transform.gameObject;
         }
-        if (Input.GetMouseButtonDown(0) && Physics.Raycast (ray, out hit, hitLayer)) { // checks for a mouse input to place.
-            boardManager.instancePiece(boardManager.currentMousePos, boardManager.currentTurn);
+        if (Input.GetMouseButtonDown(0) && Physics.Raycast (ray, out hit, hitLayer) && boardManager.CheckPlace360(boardManager.currentMousePos, boardManager.currentTurn, boardManager.pieceArr)) { // checks for a mouse input to place.
+            boardManager.instancePiece(boardManager.currentMousePos, boardManager.currentTurn, boardManager.pieceArr);
             boardManager.ChangeTurn(boardManager.currentTurn);
         }
     }

@@ -66,10 +66,10 @@ public class Manager : MonoBehaviour
         pieceMat[0] = whiteMat;
         pieceMat[1] = blackMat;
     }
-    public void instancePiece(Vector2 pos, int colour) {
+    public void instancePiece(Vector2 pos, int colour, pieces[,] board) {
         GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f, pos.y), Quaternion.identity, currentTurn == 0 ? whiteParent : blackParent); // creates a new peice based on the inputed location.
         lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; // sets the colour of the piece to the colour inputed.
-        
+        board[(int)pos.x,(int)pos.y] = new pieces(lastCreated, colour,pos);
     }
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
         currentTurn = turn == 0 ? 1 : 0;
