@@ -193,6 +193,7 @@ public class Manager : MonoBehaviour
         }
 
     }
+    
     public string LogBoard(pieces[,] board) {
         string output = "";
         for (int i = 0; i < 8; i++) {
@@ -205,11 +206,13 @@ public class Manager : MonoBehaviour
         }
         return output;
     }
+    
     public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) {
-        for (int i = 0; i < 8;) {
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 newBoard[i,j] = oldBoard[i,j];
             }
         }
     }
+    
 }
