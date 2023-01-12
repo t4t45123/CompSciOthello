@@ -22,7 +22,7 @@ public class HoverChecker : MonoBehaviour
             //boardManager.ChangeTurn(boardManager.currentTurn);
         }
         if (Input.GetMouseButtonUp(1)) {
-            boardManager.delBoard(boardManager.pieceArr);
+            Debug.Log (boardManager.LogBoard(boardManager.startBoard));
         }
     }
 }

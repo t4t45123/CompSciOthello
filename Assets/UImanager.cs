@@ -5,12 +5,17 @@ using TMPro;
 
 public class UImanager : MonoBehaviour
 {
+    //gameObject reference
     [SerializeField] GameObject loginScreen;
     [SerializeField] GameObject MainMenu;
     [SerializeField] GameObject ErrorTextObject;
     [SerializeField] GameObject PreGameMenu;
     [SerializeField] GameObject playMenu;
+    [SerializeField] GameObject adminButtonParent;
+
+    //Script refernece
     [SerializeField] Manager boardManager;
+    [SerializeField] AccountManager accountManager;
     public float errorDisplayDuration = 5f;
     TextMeshProUGUI errorText;
     [SerializeField] float lastDisplayTime;
@@ -35,6 +40,11 @@ public class UImanager : MonoBehaviour
     public void EnablePlayMenu() {
         DisableAllScreens();
         playMenu.SetActive(true);
+        if (accountManager.playerId == 1) {
+            adminButtonParent.SetActive(true);
+        }else {
+            adminButtonParent.SetActive(false);
+        }
     }
     void Start() {
         EnableLoginScreen();
@@ -48,7 +58,7 @@ public class UImanager : MonoBehaviour
         boardManager.loadBoard(boardManager.startBoard, boardManager.pieceArr);
     }
     public void Logboard() {
-        Debug.Log (boardManager.LogBoard(boardManager.startBoard));
+        Debug.Log (boardManager.LogBoard(boardManager.pieceArr));
     }
     public void DisplayErrorText (string message) {
         errorText.color = new Color(255, 0,0,255);

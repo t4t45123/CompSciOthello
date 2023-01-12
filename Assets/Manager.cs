@@ -119,7 +119,7 @@ public class Manager : MonoBehaviour
         foreach (int item in coloursInRow) {
             tempString += item;
         }
-        Debug.Log(tempString + "\n" + dir + "\n\n");
+        //Debug.Log(tempString + "\n" + dir + "\n\n");
         return coloursInRow;
     }
     public placeCheck CheckPlace(int dir, Vector2 pos, int colour, pieces[,] board) // checks if there is a piece that outflanks another peice.
