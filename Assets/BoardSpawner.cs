@@ -24,6 +24,7 @@ public class BoardSpawner : MonoBehaviour
         boardManager.instancePiece (new Vector2(3,4), 0, boardManager.pieceArr);
         boardManager.instancePiece (new Vector2(4,3), 0, boardManager.pieceArr);
         boardManager.instancePiece (new Vector2(4,4), 1, boardManager.pieceArr);
+        boardManager.saveBoard (boardManager.startBoard, boardManager.pieceArr);
     }
 
     // Update is called once per frame

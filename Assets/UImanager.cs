@@ -9,6 +9,8 @@ public class UImanager : MonoBehaviour
     [SerializeField] GameObject MainMenu;
     [SerializeField] GameObject ErrorTextObject;
     [SerializeField] GameObject PreGameMenu;
+    [SerializeField] GameObject playMenu;
+    [SerializeField] Manager boardManager;
     public float errorDisplayDuration = 5f;
     TextMeshProUGUI errorText;
     [SerializeField] float lastDisplayTime;
@@ -16,6 +18,7 @@ public class UImanager : MonoBehaviour
         loginScreen.SetActive(false);
         MainMenu.SetActive(false);
         PreGameMenu.SetActive(false);
+        playMenu.SetActive(false);
     }
     public void EnableLoginScreen() {
         DisableAllScreens();
@@ -29,10 +32,23 @@ public class UImanager : MonoBehaviour
         DisableAllScreens();
         PreGameMenu.SetActive(true);
     }
+    public void EnablePlayMenu() {
+        DisableAllScreens();
+        playMenu.SetActive(true);
+    }
     void Start() {
         EnableLoginScreen();
         errorText = ErrorTextObject.GetComponent<TextMeshProUGUI>();
         lastDisplayTime = Time.time;
+    }
+    public void delMainBoard() {
+        boardManager.delBoard(boardManager.pieceArr);
+    }
+    public void ResetMainBoard() {
+        boardManager.loadBoard(boardManager.startBoard, boardManager.pieceArr);
+    }
+    public void Logboard() {
+        Debug.Log (boardManager.LogBoard(boardManager.startBoard));
     }
     public void DisplayErrorText (string message) {
         errorText.color = new Color(255, 0,0,255);

@@ -36,6 +36,7 @@ public class Manager : MonoBehaviour
     [SerializeField] Transform blackParent;
     [SerializeField] GameObject piece;
     public pieces[,] pieceArr = new pieces[8,8];
+    public pieces[,] startBoard = new pieces[8,8];
     public Vector2 currentMousePos;
     public int currentTurn = 0;
 
@@ -63,10 +64,11 @@ public class Manager : MonoBehaviour
         pieceMat[0] = whiteMat;
         pieceMat[1] = blackMat;
     }
-    public void instancePiece(Vector2 pos, int colour, pieces[,] board) {
+    public GameObject instancePiece(Vector2 pos, int colour, pieces[,] board) {
         GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f, pos.y), Quaternion.identity, colour == 0 ? whiteParent : blackParent); // creates a new peice based on the inputed location.
         lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; // sets the colour of the piece to the colour inputed.
         board[(int)pos.x,(int)pos.y] = new pieces(lastCreated, colour,pos);
+        return lastCreated;
     }
     public void mainPlace(Vector2 pos, int colour, pieces[,] board) {
         if (CheckPlace360(pos, colour,board)) {
@@ -166,5 +168,48 @@ public class Manager : MonoBehaviour
 
         }
     }
+    void delPiece(pieces[,] board, Vector2 pos) {
+        if (board[(int)pos.x,(int)pos.y].piece != null) {
+            Destroy(board[(int)pos.x,(int)pos.y].piece);
+            board[(int)pos.x,(int)pos.y] = new pieces (null, 9, new Vector2(-1,-1));
+        }
+    }
+    public void delBoard(pieces[,] board) {
+        for (int i = 0; i < 8; i++) { 
+            for (int j = 0; j < 8; j++) {
+                delPiece(board, new Vector2(i,j));
+            }
+        }
+    }
+    
+    public void loadBoard(pieces[,] newBoard, pieces[,] oldBoard) {
+        delBoard(oldBoard);
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (newBoard[i,j].colour != 9) {
+                    instancePiece(new Vector2(i,j), newBoard[i,j].colour, pieceArr);
+                }
+            }
+        }
 
+    }
+    public string LogBoard(pieces[,] board) {
+        string output = "";
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (j == 0) {
+                    output = output + "\n";
+                }
+                output = (output + board[j,i].colour + " ");
+            }
+        }
+        return output;
+    }
+    public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) {
+        for (int i = 0; i < 8;) {
+            for (int j = 0; j < 8; j++) {
+                newBoard[i,j] = oldBoard[i,j];
+            }
+        }
+    }
 }
