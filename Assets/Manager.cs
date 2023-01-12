@@ -210,7 +210,7 @@ public class Manager : MonoBehaviour
     public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                newBoard[i,j] = oldBoard[i,j];
+                newBoard[i,j] = new pieces(null, oldBoard[i,j].colour, oldBoard[i,j].position);
             }
         }
     }
