@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public class pieces {
         public GameObject piece;
+        
         public int colour;
         public Vector2 position;
         public pieces (GameObject Piece, int col, Vector2 pos) {
@@ -14,6 +15,8 @@ public class pieces {
 
 public class Manager : MonoBehaviour
 {
+    public GameObject shadow;
+    public Transform shadowParent;
     public class placeCheck {
         public bool canPlace;
         public int endPos;
@@ -228,6 +231,15 @@ public class Manager : MonoBehaviour
             }
         }
         return possibleMoves;
+    }
+    public void placeShadows(Vector2[] positions) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (positions[i *j] == new Vector2(i,j) {
+                    Debug.Log(positions[i * j]);
+                }}
+                }
+        }
     }
     
 }
