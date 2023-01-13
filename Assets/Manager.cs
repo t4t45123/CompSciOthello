@@ -15,15 +15,13 @@ public class pieces {
 
 public class Manager : MonoBehaviour
 {
-    public GameObject shadow;
-    public Transform shadowParent;
+    
     public class placeCheck {
         public bool canPlace;
         public int endPos;
         public Vector2 startPos;
         public int direction;
         public int Colour;
-
         public placeCheck (bool placeable, int end, Vector2 start, int dir, int col) {
             canPlace = placeable;
             endPos = end;
@@ -33,6 +31,8 @@ public class Manager : MonoBehaviour
         }
     }
     // vars
+    public GameObject shadow;
+    public Transform shadowParent;
     public Material[] pieceMat = new Material[2];
     [SerializeField] Material blackMat;
     [SerializeField] Material whiteMat;
@@ -163,7 +163,7 @@ public class Manager : MonoBehaviour
         }
         return false;
     }
-    void changePeices(placeCheck check, pieces[,] board)  {
+    void changePeices(placeCheck check, pieces[,] board)  { // used to change the colour of the pieces when a piece is placed.
         Vector2 tempPos = check.startPos;
         for (int i = 0; i < check.endPos; i++) {
             board[(int)tempPos.x, (int)tempPos.y].colour = check.Colour;
@@ -172,13 +172,13 @@ public class Manager : MonoBehaviour
 
         }
     }
-    void delPiece(pieces[,] board, Vector2 pos) {
+    void delPiece(pieces[,] board, Vector2 pos) { // used to delete a specific piece from the board.
         if (board[(int)pos.x,(int)pos.y].piece != null) {
             Destroy(board[(int)pos.x,(int)pos.y].piece);
             board[(int)pos.x,(int)pos.y] = new pieces (null, 9, new Vector2(-1,-1));
         }
     }
-    public void delBoard(pieces[,] board) {
+    public void delBoard(pieces[,] board) { // used to remove all the pieces on the board
         for (int i = 0; i < 8; i++) { 
             for (int j = 0; j < 8; j++) {
                 delPiece(board, new Vector2(i,j));
@@ -186,7 +186,7 @@ public class Manager : MonoBehaviour
         }
     }
     
-    public void loadBoard(pieces[,] newBoard, pieces[,] oldBoard) {
+    public void loadBoard(pieces[,] newBoard, pieces[,] oldBoard) { // used to generate a new board from an array
         delBoard(oldBoard);
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -198,7 +198,7 @@ public class Manager : MonoBehaviour
 
     }
     
-    public string LogBoard(pieces[,] board) {
+    public string LogBoard(pieces[,] board) { // used for debugging the board, to see if there is any desyncs with the board data and what is shown visually
         string output = "";
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -211,14 +211,14 @@ public class Manager : MonoBehaviour
         return output;
     }
     
-    public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) {
+    public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) { // used to save the board state in a new array, so it can be used later for realoding a specific state
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 newBoard[i,j] = new pieces(null, oldBoard[i,j].colour, oldBoard[i,j].position);
             }
         }
     }
-    public Vector2[] getPossibleMoves(pieces[,] board, int colour) {
+    public Vector2[] getPossibleMoves(pieces[,] board, int colour) { // used to get the next possible moves
         Vector2[] possibleMoves = new Vector2[64];
 
         int totalMoves = 0;
@@ -230,16 +230,29 @@ public class Manager : MonoBehaviour
                 } 
             }
         }
+        for (int k = 0; k < 64; k++) { // setting the possible moves to a null value so it does not alway place at the positon 0,0
+            if (k > totalMoves) {
+                possibleMoves[k] = (new Vector2(-1,-1));
+            }
+        }
         return possibleMoves;
     }
-    public void placeShadows(Vector2[] positions) {
+    public void placeShadows(Vector2[] positions) { // used to display a shadow on all possible locations so the player knows where they can place.
+        delShadowChildren();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (positions[i *j] == new Vector2(i,j) {
+                for (int k = 0; k < 64; k++) {
+                    if (positions[k] == new Vector2(i,j)) {
                     Debug.Log(positions[i * j]);
-                }}
+                    Instantiate(shadow, new Vector3(i, 1.5f, j), Quaternion.identity, shadowParent);
+                    }
                 }
+            }
         }
     }
-    
+    void delShadowChildren() { // used to delete all of the children of the shadow parent, so a new set can be created 
+        while(shadowParent.childCount > 0) {
+            Debug.Log(shadowParent.GetChild(1));
+        }
+    }
 }

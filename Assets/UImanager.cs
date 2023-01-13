@@ -51,6 +51,9 @@ public class UImanager : MonoBehaviour
             Debug.Log (boardManager.getPossibleMoves(boardManager.pieceArr, boardManager.currentTurn)[i]);
         }
     }
+    public void shadowPlace() {
+        boardManager.placeShadows(boardManager.getPossibleMoves(boardManager.pieceArr,boardManager.currentTurn));
+    } 
     void Start() {
         EnableLoginScreen();
         errorText = ErrorTextObject.GetComponent<TextMeshProUGUI>();
