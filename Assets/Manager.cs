@@ -11,6 +11,7 @@ public class pieces {
         }
     }
 
+
 public class Manager : MonoBehaviour
 {
     public class placeCheck {
@@ -213,6 +214,20 @@ public class Manager : MonoBehaviour
                 newBoard[i,j] = new pieces(null, oldBoard[i,j].colour, oldBoard[i,j].position);
             }
         }
+    }
+    public Vector2[] getPossibleMoves(pieces[,] board, int colour) {
+        Vector2[] possibleMoves = new Vector2[64];
+
+        int totalMoves = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (CheckPlace360(new Vector2(i,j), colour, board)) {
+                    totalMoves +=1;
+                    possibleMoves[totalMoves] = (new Vector2(i,j));
+                } 
+            }
+        }
+        return possibleMoves;
     }
     
 }

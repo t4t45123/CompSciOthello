@@ -46,6 +46,11 @@ public class UImanager : MonoBehaviour
             adminButtonParent.SetActive(false);
         }
     }
+    public void LogPossibleMoves() {
+        for (int i = 0; i < 64; i++) {
+            Debug.Log (boardManager.getPossibleMoves(boardManager.pieceArr, boardManager.currentTurn)[i]);
+        }
+    }
     void Start() {
         EnableLoginScreen();
         errorText = ErrorTextObject.GetComponent<TextMeshProUGUI>();
