@@ -251,8 +251,8 @@ public class Manager : MonoBehaviour
         }
     }
     void delShadowChildren() { // used to delete all of the children of the shadow parent, so a new set can be created 
-        while(shadowParent.childCount > 0) {
-            Debug.Log(shadowParent.GetChild(1));
+        foreach(Transform child in shadowParent) {
+            Destroy(child.gameObject);
         }
     }
 }
