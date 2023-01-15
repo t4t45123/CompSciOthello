@@ -85,7 +85,9 @@ public class Manager : MonoBehaviour
         for (int i =0; i < 8; i++) {
             placeCheck check = CheckPlace(i, pos, colour, board);
             changePeices(check,board);
+            placeShadows(getPossibleMoves(board, colour));
         }
+        
     }
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
         currentTurn = turn == 0 ? 1 : 0;
@@ -225,16 +227,17 @@ public class Manager : MonoBehaviour
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (CheckPlace360(new Vector2(i,j), colour, board)) {
-                    totalMoves +=1;
                     possibleMoves[totalMoves] = (new Vector2(i,j));
+                    totalMoves +=1;
                 } 
             }
         }
         for (int k = 0; k < 64; k++) { // setting the possible moves to a null value so it does not alway place at the positon 0,0
-            if (k > totalMoves) {
+            if (k >= totalMoves) {
                 possibleMoves[k] = (new Vector2(-1,-1));
             }
         }
+        
         return possibleMoves;
     }
     public void placeShadows(Vector2[] positions) { // used to display a shadow on all possible locations so the player knows where they can place.
@@ -242,7 +245,7 @@ public class Manager : MonoBehaviour
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 for (int k = 0; k < 64; k++) {
-                    if (positions[k] == new Vector2(i,j)) {
+                    if (positions[k] == new Vector2(i,j) &&  positions[k] != new Vector2 (-1, -1)) {
                     Debug.Log(positions[i * j]);
                     Instantiate(shadow, new Vector3(i, 1.5f, j), Quaternion.identity, shadowParent);
                     }
@@ -255,4 +258,16 @@ public class Manager : MonoBehaviour
             Destroy(child.gameObject);
         }
     }
+    int getPieceCount(pieces[,] board, int colour) {
+        int count = 0;
+        for (int i =0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (board[i,j].colour == colour) {
+                    count += 1;
+                }
+            }
+        }
+        return count;
+    }
+
 }
