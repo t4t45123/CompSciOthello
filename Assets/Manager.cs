@@ -51,7 +51,7 @@ public class Manager : MonoBehaviour
     {
         placeShadows(getPossibleMoves(pieceArr,currentTurn));
         posSetter();
-        Debug.Log(getPieceCount(pieceArr,1));
+        Debug.Log(getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn), currentTurn, pieceArr));
     }
     public void posSetter() { // sets the current mouse position var to the location on the board that it is currently hovering over.
         Cell cell = hoverChecker.HoverObject.GetComponentInParent<Cell>();
@@ -248,7 +248,7 @@ public class Manager : MonoBehaviour
             for (int j = 0; j < 8; j++) {
                 for (int k = 0; k < 64; k++) {
                     if (positions[k] == new Vector2(i,j) &&  positions[k] != new Vector2 (-1, -1)) {
-                    Debug.Log(positions[i * j]);
+                    //Debug.Log(positions[i * j]);
                     Instantiate(shadow, new Vector3(i, 1.5f, j), Quaternion.identity, shadowParent);
                     }
                 }
@@ -270,6 +270,16 @@ public class Manager : MonoBehaviour
             }
         }
         return count;
+    }
+    int getPossibleMoveCount(Vector2[] possibleMoveArr, int colour, pieces[,] board) {
+        Vector2 nullMove = new Vector2 (-1, -1);
+        int count = 0;
+        foreach (Vector2 move in possibleMoveArr) {
+            if (move != nullMove) {
+                count += 1;
+            }
+        }
+    return count;
     }
 
 }
