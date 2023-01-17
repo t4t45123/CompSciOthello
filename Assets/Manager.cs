@@ -49,7 +49,9 @@ public class Manager : MonoBehaviour
     
     void Update() // called every frame
     {
+        placeShadows(getPossibleMoves(pieceArr,currentTurn));
         posSetter();
+        Debug.Log(getPieceCount(pieceArr,1));
     }
     public void posSetter() { // sets the current mouse position var to the location on the board that it is currently hovering over.
         Cell cell = hoverChecker.HoverObject.GetComponentInParent<Cell>();

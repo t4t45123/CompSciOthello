@@ -7,6 +7,7 @@ public class HoverChecker : MonoBehaviour
     public Transform HoverTransform;
     public GameObject HoverObject;
     [SerializeField] LayerMask hitLayer;
+    [SerializeField] LayerMask ignoreLayer;
     [SerializeField] Manager boardManager;
     Ray ray;
     RaycastHit hit;
@@ -19,7 +20,7 @@ public class HoverChecker : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(0) && Physics.Raycast (ray, out hit, hitLayer) && boardManager.CheckPlace360(boardManager.currentMousePos, boardManager.currentTurn, boardManager.pieceArr)) { // checks for a mouse input to place.
             boardManager.mainPlace(boardManager.currentMousePos, boardManager.currentTurn, boardManager.pieceArr);
-            boardManager.placeShadows(boardManager.getPossibleMoves(boardManager.pieceArr, boardManager.currentTurn == 1 ? 0 : 1));
+            
             //boardManager.ChangeTurn(boardManager.currentTurn);
         }
         if (Input.GetMouseButtonUp(1)) {
