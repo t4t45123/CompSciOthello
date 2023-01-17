@@ -61,10 +61,24 @@ public class AccountManager : MonoBehaviour
         return false;
     }
     bool CheckUser(string user) { // checks if the inputed username is a valid input
-        if (user.Length <= 15 & user.Length >= 3 & databaseScript.CheckIfNewUser(user)) {
+        if (user.Length <= 15 & user.Length >= 3 & databaseScript.CheckIfNewUser(user) & checkUserWords(user)) {
             return true;
         }
         uiManager.DisplayErrorText("Inputted Username is invalid");
         return false;
+    }
+    bool checkUserWords(string user) { // checks if the inputted username contains a bad word
+        bool found = false;
+        string badWords = new string ("john,bad"); // add to this string for all of the words that are not allowed in the inputted username
+        foreach (string word in badWords.Split(",")) {
+            if (user.Contains(word)) {
+                found = true;
+            }
+        }
+        if (!found) {
+            return true;
+        }else {
+            return false;
+        }
     }
 }
