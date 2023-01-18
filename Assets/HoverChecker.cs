@@ -14,7 +14,7 @@ public class HoverChecker : MonoBehaviour
     void Update()
     {
         ray = Camera.main.ScreenPointToRay(Input.mousePosition); 
-        if (Physics.Raycast(ray, out hit, hitLayer)) {
+        if (Physics.Raycast(ray, out hit, 1000f, hitLayer)) {
             HoverTransform = hit.transform;
             HoverObject = hit.transform.gameObject;
         }

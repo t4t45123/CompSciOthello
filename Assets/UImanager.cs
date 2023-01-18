@@ -63,7 +63,7 @@ public class UImanager : MonoBehaviour
         boardManager.delBoard(boardManager.pieceArr);
     }
     public void ResetMainBoard() {
-        boardManager.loadBoard(boardManager.startBoard, boardManager.pieceArr);
+        boardManager.loadBoard(boardManager.pieceArr, boardManager.pieceArr);
     }
     public void Logboard() {
         Debug.Log (boardManager.LogBoard(boardManager.pieceArr));

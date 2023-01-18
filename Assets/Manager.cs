@@ -161,7 +161,7 @@ public class Manager : MonoBehaviour
     } 
     public bool CheckPlace360 (Vector2 pos,int colour, pieces[,] board) { // performs the checkplace function for each direction.
         for (int i = 0; i < 8; i++) {
-            if (CheckPlace(i,pos, colour, board).canPlace) {
+            if (CheckPlace(i,pos, colour, board).canPlace & board[(int)pos.x,(int)pos.y].colour == 9) { // 9 is the null value for the board.
                 return true;
             }
         }
@@ -191,14 +191,28 @@ public class Manager : MonoBehaviour
     }
     
     public void loadBoard(pieces[,] newBoard, pieces[,] oldBoard) { // used to generate a new board from an array
-        delBoard(oldBoard);
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (newBoard[i,j].colour != 9) {
-                    instancePiece(new Vector2(i,j), newBoard[i,j].colour, pieceArr);
+        if (newBoard == oldBoard) {
+            pieces[,] tempBoard = new pieces[8,8];
+            saveBoard(tempBoard, oldBoard);
+            delBoard(newBoard);
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if (tempBoard[i,j].colour != 9) {
+                        instancePiece(new Vector2(i,j), tempBoard[i,j].colour, pieceArr);
+                    }
                 }
             }
+        }else {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if (newBoard[i,j].colour != 9) {
+                        instancePiece(new Vector2(i,j), newBoard[i,j].colour, pieceArr);
+                    }
+                }
+            }
+            delBoard(oldBoard);
         }
+        
 
     }
     
@@ -215,7 +229,9 @@ public class Manager : MonoBehaviour
         return output;
     }
     
-    public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) { // used to save the board state in a new array, so it can be used later for realoding a specific state
+    /*this is used to save the board, so it cna be loaded again later, and this is needed due to the boards being linked by gameObjects
+    which were causing problems with both of the boards being changed simultaneously*/
+    public void saveBoard(pieces[,] newBoard, pieces[,] oldBoard) { 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 newBoard[i,j] = new pieces(null, oldBoard[i,j].colour, oldBoard[i,j].position);
@@ -280,6 +296,11 @@ public class Manager : MonoBehaviour
             }
         }
     return count;
+    }
+    void winCheck() {
+        if (getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn),currentTurn,pieceArr) == 0) {
+            //condition is met if the current colour has won.
+        }
     }
 
 }
