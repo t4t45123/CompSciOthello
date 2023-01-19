@@ -100,7 +100,7 @@ public class UserDatabase : MonoBehaviour
         IDataReader dataReader = dbCommandReadValues.ExecuteReader();
         while (dataReader.Read()) {
             userId = (dataReader.GetInt32(0));
-            Debug.Log(userId);
+            //Debug.Log(userId);
         }
         dbConnection.Close();
         return userId;

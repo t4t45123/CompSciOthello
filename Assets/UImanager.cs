@@ -18,7 +18,13 @@ public class UImanager : MonoBehaviour
     [SerializeField] AccountManager accountManager;
     public float errorDisplayDuration = 5f;
     TextMeshProUGUI errorText;
+    public TextMeshProUGUI winText;
     [SerializeField] float lastDisplayTime;
+    public float winDisplayDuration =  5f;
+    public float lastWinDisplayTime = -5f;
+    public bool winTextActive;
+
+
     void DisableAllScreens() {
         loginScreen.SetActive(false);
         MainMenu.SetActive(false);
@@ -63,7 +69,7 @@ public class UImanager : MonoBehaviour
         boardManager.delBoard(boardManager.pieceArr);
     }
     public void ResetMainBoard() {
-        boardManager.loadBoard(boardManager.pieceArr, boardManager.pieceArr);
+        boardManager.loadBoard(boardManager.startBoard, boardManager.pieceArr);
     }
     public void Logboard() {
         Debug.Log (boardManager.LogBoard(boardManager.pieceArr));
@@ -86,9 +92,22 @@ public class UImanager : MonoBehaviour
         if (lastDisplayTime + errorDisplayDuration < Time.time) {
             ErrorTextObject.SetActive(false);
         }
+        if (lastWinDisplayTime + winDisplayDuration < Time.time) {
+            winText.gameObject.SetActive(false);
+            winTextActive = false;
+        }
     }
     public void closeGame() {
         Application.Quit();
+    }
+    public void displayWinText(int colour){
+        lastDisplayTime = Time.time;
+        winTextActive = true;
+        winText.text = ((colour == 1 ? "black " : "white ") + "wins");
+        winText.gameObject.SetActive(true);
+        if (lastWinDisplayTime + winDisplayDuration > Time.time) {
+            EnablePreGameMenu();
+        }
     }
 
 }

@@ -36,7 +36,7 @@ public class AccountManager : MonoBehaviour
         
         if (databaseScript.compareUser(GetUserInput(),GetPassInput())) {
             Debug.Log(GetUserInput() + " "+ GetPassInput());
-            Debug.Log("correct");
+            //Debug.Log("correct");
             playerId = databaseScript.getUserId(GetUserInput());
             playerUsername = GetUserInput();
             

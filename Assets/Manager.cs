@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 public class pieces {
         public GameObject piece;
         
@@ -39,6 +40,7 @@ public class Manager : MonoBehaviour
     [SerializeField] Transform whiteParent;
     [SerializeField] Transform blackParent;
     [SerializeField] GameObject piece;
+    [SerializeField] UImanager ui;
     public pieces[,] pieceArr = new pieces[8,8];
     public pieces[,] startBoard = new pieces[8,8];
     public Vector2 currentMousePos;
@@ -51,7 +53,8 @@ public class Manager : MonoBehaviour
     {
         placeShadows(getPossibleMoves(pieceArr,currentTurn));
         posSetter();
-        Debug.Log(getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn), currentTurn, pieceArr));
+        //Debug.Log(getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn), currentTurn, pieceArr));
+        winCheck(pieceArr,currentTurn);
     }
     public void posSetter() { // sets the current mouse position var to the location on the board that it is currently hovering over.
         Cell cell = hoverChecker.HoverObject.GetComponentInParent<Cell>();
@@ -88,6 +91,7 @@ public class Manager : MonoBehaviour
             placeCheck check = CheckPlace(i, pos, colour, board);
             changePeices(check,board);
             placeShadows(getPossibleMoves(board, colour));
+            
         }
         
     }
@@ -147,6 +151,7 @@ public class Manager : MonoBehaviour
                 if (row[i] == colour) {
                     notFound = false;
                     placeCheck placecheck = new placeCheck(true, i , pos,dir,colour);
+                    
                     return placecheck;
                 }
                 else if (row[i] == oppCol) {
@@ -297,9 +302,9 @@ public class Manager : MonoBehaviour
         }
     return count;
     }
-    void winCheck() {
-        if (getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn),currentTurn,pieceArr) == 0) {
-            //condition is met if the current colour has won.
+    void winCheck(pieces[,] board, int colour) {
+        if (getPossibleMoveCount(getPossibleMoves(board,colour),colour,board) == 0) {
+            ui.winText.text = ((colour == 1 ? "black " : "white ") + "wins");
         }
     }
 
