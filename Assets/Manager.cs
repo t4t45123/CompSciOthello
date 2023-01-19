@@ -55,6 +55,7 @@ public class Manager : MonoBehaviour
         posSetter();
         //Debug.Log(getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn), currentTurn, pieceArr));
         winCheck(pieceArr,currentTurn);
+        ui.updateCountAndTurn(getPieceCount(pieceArr, 0), getPieceCount(pieceArr,1), currentTurn);
     }
     public void posSetter() { // sets the current mouse position var to the location on the board that it is currently hovering over.
         Cell cell = hoverChecker.HoverObject.GetComponentInParent<Cell>();
@@ -208,6 +209,7 @@ public class Manager : MonoBehaviour
                 }
             }
         }else {
+            delBoard(oldBoard);
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
                     if (newBoard[i,j].colour != 9) {
@@ -215,7 +217,7 @@ public class Manager : MonoBehaviour
                     }
                 }
             }
-            delBoard(oldBoard);
+            
         }
         
 
@@ -281,7 +283,7 @@ public class Manager : MonoBehaviour
             Destroy(child.gameObject);
         }
     }
-    int getPieceCount(pieces[,] board, int colour) {
+    int getPieceCount(pieces[,] board, int colour) { // gets the number of pieces of a specific colour on the board
         int count = 0;
         for (int i =0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -292,7 +294,7 @@ public class Manager : MonoBehaviour
         }
         return count;
     }
-    int getPossibleMoveCount(Vector2[] possibleMoveArr, int colour, pieces[,] board) {
+    int getPossibleMoveCount(Vector2[] possibleMoveArr, int colour, pieces[,] board) { // gets the amount of possible moves that can be played
         Vector2 nullMove = new Vector2 (-1, -1);
         int count = 0;
         foreach (Vector2 move in possibleMoveArr) {
@@ -302,10 +304,11 @@ public class Manager : MonoBehaviour
         }
     return count;
     }
-    void winCheck(pieces[,] board, int colour) {
-        if (getPossibleMoveCount(getPossibleMoves(board,colour),colour,board) == 0) {
-            ui.winText.text = ((colour == 1 ? "black " : "white ") + "wins");
-        }
+    void winCheck(pieces[,] board, int colour) { // win check function checks for if a player has won and if so then displays that the player has won and after 5 seconds take them back to the pre game menu
+        if (getPossibleMoveCount(getPossibleMoves(board,colour),colour,board) == 0 & ui.winTextActive == false) {
+            StartCoroutine(ui.displayWinText(colour));
+            
+    }
     }
 
 }
