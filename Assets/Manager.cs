@@ -2,19 +2,120 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-public class pieces {
-        public GameObject piece;
-        
-        public int colour;
-        public Vector2 position;
-        public pieces (GameObject Piece, int col, Vector2 pos) {
-            piece = Piece;
-            colour = col;
-        }
+public class pieces { // piece class.
+    public GameObject piece;
+    
+    public int colour;
+    public Vector2 position;
+    public pieces (GameObject Piece, int col, Vector2 pos) {
+        piece = Piece;
+        colour = col;
+    }
     }
 
 
-public class Manager : MonoBehaviour
+public class boardState {
+    Manager manager;
+    public pieces[,] board = new pieces[8,8];
+    public int turn;
+    public boardState (pieces[,] Board, int Col) {
+        board = Board;
+        turn = Col;
+    }
+    public boardState Move(Vector2 pos) {
+        boardState temp = new boardState ((manager.placeOnArray(pos, this.turn, this.board)), this.turn);
+        return temp;
+    }
+    public bool isGameOver() {
+        if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),turn,this.board) == 0) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+    public Vector2[] getLegalActions() {
+        Vector2[] tempArr = manager.getPossibleMoves(this.board, this.turn);
+        return tempArr;
+    }
+    public int gameResult() {
+        if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),turn,this.board) > (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn == 1 ? 0: 1),this.turn == 1 ? 0: 1,this.board))) {
+            return 1;
+        }else {return 2;
+        }
+    }
+}
+
+public class monteCarloNode{
+    Manager manager;
+    boardState state;
+    monteCarloNode parent = null;
+    Vector2 ParentAction = new Vector2 (-1,-1);
+    monteCarloNode[] children = new monteCarloNode[64];
+    int numberOfVisits = 0;
+    int[] results = new int[2];
+    
+    public List<Vector2> untriedActions = new List<Vector2>();
+    
+    public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction) {
+        state = _state;
+        parent = _parent;
+        ParentAction = _parentAction;
+    }
+    List<Vector2> untried_Actions() {
+        this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
+        return untriedActions;
+    }
+
+    int q() {
+        int wins = this.results[1];
+        int losses = this.results[2];
+        return wins - losses;
+    }
+    int n() {
+        return this.numberOfVisits;
+    }
+    monteCarloNode expand() {
+        Vector2 action = this.untriedActions[0];
+        this.untriedActions.RemoveAt(0);
+        boardState nextState = this.state.Move(action);
+        monteCarloNode childNode = new monteCarloNode(nextState,this, action);
+        this.children[this.children.Length -1] = childNode;
+        return childNode;
+
+    }
+    bool isTerminalNode() {
+        return this.state.isGameOver();
+    }
+    int rollout() {
+        boardState currentRolloutState = this.state;
+        while (! currentRolloutState.isGameOver()) {
+            Vector2[] possibleMoves = currentRolloutState.getLegalActions();
+            Vector2 action = this.rolloutPolicy(possibleMoves);
+            currentRolloutState = currentRolloutState.Move(action);
+        return currentRolloutState.gameResult();
+        }
+    }
+    void backpropagate(int result) {
+        this.numberOfVisits += 1;
+        this.results[result] += 1;
+        if (this.parent != null){
+            this.parent.backpropagate(result);
+        }
+    }
+    bool isFullyExpanded() {
+        return this.untriedActions.Count == 0;
+    }
+    monteCarloNode bestChild(float cParam = 0.1f) {
+        List<double> choicesWeights = new List<double>();
+        foreach (monteCarloNode c in this.children) {
+            choicesWeights.Add(c.q() / c.n() + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
+        }
+    }
+}
+
+
+
+public class Manager : MonoBehaviour 
 {
     
     public class placeCheck {
@@ -23,7 +124,7 @@ public class Manager : MonoBehaviour
         public Vector2 startPos;
         public int direction;
         public int Colour;
-        public placeCheck (bool placeable, int end, Vector2 start, int dir, int col) {
+        public placeCheck (bool placeable, int end, Vector2 start, int dir, int col) { // place check class used for returning the information to check the pieces that need to be changed, and if a piece can be placed.
             canPlace = placeable;
             endPos = end;
             startPos = start;
@@ -31,6 +132,8 @@ public class Manager : MonoBehaviour
             Colour = col;
         }
     }
+
+
     // vars
     public GameObject shadow;
     public Transform shadowParent;
@@ -96,6 +199,15 @@ public class Manager : MonoBehaviour
         }
         
     }
+    public pieces[,] placeOnArray(Vector2 pos, int colour, pieces[,] board) {
+        board[(int)pos.x, (int)pos.y] = new pieces(null, colour, pos);
+        for (int i = 0; i < 8; i++) {
+            placeCheck check  = CheckPlace(i, pos, colour, board);
+            changePeices(check, board);
+        }
+        return board;
+
+    }
     public void ChangeTurn(int turn) { // changes the current tune var to the opposite turn
         currentTurn = turn == 0 ? 1 : 0;
     }
@@ -125,6 +237,8 @@ public class Manager : MonoBehaviour
         for (int i = 0; i < 8; i++) {
             if (pos.x >= 0 && pos.x <= 7 && 0 <= pos.y && pos.y <= 7) {
                 coloursInRow[i] = board[(int)pos.x, (int)pos.y].colour;
+            }else {
+                coloursInRow[i] = -1;
             }
             pos += intToDir(dir);
         }
@@ -294,7 +408,7 @@ public class Manager : MonoBehaviour
         }
         return count;
     }
-    int getPossibleMoveCount(Vector2[] possibleMoveArr, int colour, pieces[,] board) { // gets the amount of possible moves that can be played
+    public int getPossibleMoveCount(Vector2[] possibleMoveArr, int colour, pieces[,] board) { // gets the amount of possible moves that can be played
         Vector2 nullMove = new Vector2 (-1, -1);
         int count = 0;
         foreach (Vector2 move in possibleMoveArr) {
@@ -310,5 +424,6 @@ public class Manager : MonoBehaviour
             
     }
     }
+
 
 }
