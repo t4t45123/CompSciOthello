@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -79,9 +80,9 @@ public class monteCarloNode{ // class handling monte carlo nodes
         return this.numberOfVisits;
     }
     monteCarloNode expand() {
-        if (!hasGottenUntriedActions) {
-            untriedActions = this.untried_Actions();
-            hasGottenUntriedActions = true;
+        if (!this.hasGottenUntriedActions) {
+            this.untriedActions = this.untried_Actions();
+            this.hasGottenUntriedActions = true;
         }
         Vector2 action = this.untriedActions[0];
         this.untriedActions.RemoveAt(0);
@@ -127,7 +128,7 @@ public class monteCarloNode{ // class handling monte carlo nodes
         return children[(int)temp];
     }
     Vector2 rolloutPolicy(Vector2[] possibleMoves) {
-        Vector2 possibleMove = possibleMoves[Random.Range(0,possibleMoves.Length)];
+        Vector2 possibleMove = possibleMoves[UnityEngine.Random.Range(0,possibleMoves.Length)];
         return possibleMove;
     }
     monteCarloNode treePolicy() {
@@ -246,11 +247,15 @@ public class Manager : MonoBehaviour
         
     }
     public pieces[,] placeOnArray(Vector2 pos, int colour, pieces[,] board) {
-        board[(int)pos.x, (int)pos.y] = new pieces(null, colour, pos);
-        for (int i = 0; i < 8; i++) {
-            placeCheck check  = CheckPlace(i, pos, colour, board);
-            changePieceArr(check, board);
-        }
+        //if (pos.x >= 0 & pos.x < 8 & pos.y >= 0 & pos.y <8) {
+
+            
+            board[(int)pos.x, (int)pos.y] = new pieces(null, colour, pos);
+            for (int i = 0; i < 8; i++) {
+                placeCheck check  = CheckPlace(i, pos, colour, board);
+                changePieceArr(check, board);
+            }
+            //}
         return board;
 
     }
@@ -480,7 +485,7 @@ public class Manager : MonoBehaviour
     public void createMonteNode() {
         pieces[,] tempBoard = new pieces[8,8];
         saveBoard(tempBoard, pieceArr);
-        monteCarloNode root = new monteCarloNode((new boardState(pieceArr, currentTurn)), null, new Vector2(-1,-1)); 
+        monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2(-1,-1)); 
         monteCarloNode selectedNode = root.bestAction();
         LogBoard( selectedNode.state.board);
     }
