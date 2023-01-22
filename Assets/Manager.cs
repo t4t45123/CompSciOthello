@@ -48,115 +48,7 @@ public class boardState { // class handling board states for the monete carlo tr
     }
 }
 
-public class monteCarloNode{ // class handling monte carlo nodes
-    Manager manager = new Manager();
-    public boardState state;
-    monteCarloNode parent = null;
-    Vector2 ParentAction = new Vector2 (-1,-1);
-    monteCarloNode[] children = new monteCarloNode[64];
-    int numberOfVisits = 0;
-    int[] results = new int[3];
-    bool hasGottenUntriedActions = false;
-    public List<Vector2> untriedActions = new List<Vector2>();
-    
-    
-    
-    public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction) { // constructer for the class
-        state = _state;
-        parent = _parent;
-        ParentAction = _parentAction;
-    }
-    List<Vector2> untried_Actions() { 
-        this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
-        return untriedActions;
-    }
 
-    int q() {
-        int wins = this.results[1];
-        int losses = this.results[2];
-        return wins - losses;
-    }
-    int n() {
-        return this.numberOfVisits;
-    }
-    monteCarloNode expand() {
-        if (!this.hasGottenUntriedActions) {
-            this.untriedActions = this.untried_Actions();
-            this.hasGottenUntriedActions = true;
-        }
-        Vector2 action = this.untriedActions[0];
-        this.untriedActions.RemoveAt(0);
-        boardState nextState = this.state.Move(action);
-        monteCarloNode childNode = new monteCarloNode(nextState,this, action);
-        this.children[this.children.Length -1] = childNode;
-        return childNode;
-
-    }
-    bool isTerminalNode() {
-        return this.state.isGameOver();
-    }
-    int rollout() {
-        boardState currentRolloutState = this.state;
-        while (!currentRolloutState.isGameOver()) {
-            Vector2[] possibleMoves = currentRolloutState.getLegalActions();
-            Vector2 action = this.rolloutPolicy(possibleMoves);
-            currentRolloutState = currentRolloutState.Move(action);
-        }
-        return currentRolloutState.gameResult();
-        
-        
-    }
-    void backpropagate(int result) {
-        this.numberOfVisits += 1;
-        this.results[result] += 1;
-        if (this.parent != null){
-            this.parent.backpropagate(result);
-        }
-    }
-    bool isFullyExpanded() {
-        return this.untriedActions.Count == 0;
-    }
-    monteCarloNode bestChild(float cParam = 0.1f) {
-        double temp = 0f;
-        List<double> choicesWeights = new List<double>();
-        foreach (monteCarloNode c in this.children) {
-            choicesWeights.Add(c.q() / c.n() + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
-        }
-        foreach (double item in choicesWeights) {
-            temp = Mathf.Max((float)temp,(float)item);
-        }
-        return children[(int)temp];
-    }
-    Vector2 rolloutPolicy(Vector2[] possibleMoves) {
-        Vector2 possibleMove = possibleMoves[UnityEngine.Random.Range(0,possibleMoves.Length)];
-        return possibleMove;
-    }
-    monteCarloNode treePolicy() {
-        monteCarloNode current = this;
-        if (!hasGottenUntriedActions) {
-            untriedActions = this.untried_Actions();
-            hasGottenUntriedActions = true;
-        }
-        while (! current.isTerminalNode()) {
-            if (!current.isFullyExpanded()) {
-                return current.expand();
-            }else {
-                current = current.bestChild();
-            }
-        }
-        return current;
-    }
-    public monteCarloNode bestAction() {
-        monteCarloNode v;
-        int simulationNum = 100;
-        for (int i = 0; i < simulationNum; i++) {
-            v = this.treePolicy();
-            int reward = v.rollout();
-            v.backpropagate(reward);
-        }
-        return this.bestChild(0.1f);
-    }
-}
 
 
 
@@ -490,5 +382,122 @@ public class Manager : MonoBehaviour
         LogBoard( selectedNode.state.board);
     }
 
+    public class monteCarloNode{ // class handling monte carlo nodes
+        Manager manager = new Manager();
+        public boardState state;
+        monteCarloNode parent = null;
+        Vector2 ParentAction = new Vector2 (-1,-1);
+        monteCarloNode[] children = new monteCarloNode[64];
+        int numberOfVisits = 0;
+        int[] results = new int[3];
+        bool hasGottenUntriedActions = false;
+        public List<Vector2> untriedActions = new List<Vector2>();
+        
+        
+        
+        public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction) { // constructer for the class
+            state = _state;
+            parent = _parent;
+            ParentAction = _parentAction;
+        }
+        List<Vector2> untried_Actions() { 
+            this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
+            foreach(Vector2 i in this.untriedActions) {
+                Debug.Log(i);
+            }
+            return untriedActions;
+        }
 
-}
+        int q() {
+            int wins = this.results[1];
+            int losses = this.results[2];
+            return wins - losses;
+        }
+        int n() {
+            return this.numberOfVisits;
+        }
+        monteCarloNode expand() {
+            if (!this.hasGottenUntriedActions) {
+                this.untriedActions = this.untried_Actions();
+                this.hasGottenUntriedActions = true;
+            }
+            
+            Vector2 action = this.untriedActions[0];
+            monteCarloNode childNode = null;
+            Vector2 nullMove = new Vector2(-1,-1);
+            this.untriedActions.RemoveAt(0);
+            if (action != nullMove) {
+                boardState nextState = this.state.Move(action);
+                childNode = new monteCarloNode(nextState,this, action);
+                this.children[this.children.Length -1] = childNode;
+                
+            }
+            return childNode;
+
+        }
+        bool isTerminalNode() {
+            return this.state.isGameOver();
+        }
+        int rollout() {
+            boardState currentRolloutState = this.state;
+            while (!currentRolloutState.isGameOver()) {
+                Vector2[] possibleMoves = currentRolloutState.getLegalActions();
+                Vector2 action = this.rolloutPolicy(possibleMoves);
+                currentRolloutState = currentRolloutState.Move(action);
+            }
+            return currentRolloutState.gameResult();
+            
+            
+        }
+        void backpropagate(int result) {
+            this.numberOfVisits += 1;
+            this.results[result] += 1;
+            if (this.parent != null){
+                this.parent.backpropagate(result);
+            }
+        }
+        bool isFullyExpanded() {
+            return this.untriedActions.Count == 0;
+        }
+        monteCarloNode bestChild(float cParam = 0.1f) {
+            double temp = 0f;
+            List<double> choicesWeights = new List<double>();
+            foreach (monteCarloNode c in this.children) {
+                choicesWeights.Add(c.q() / c.n() + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
+            }
+            foreach (double item in choicesWeights) {
+                temp = Mathf.Max((float)temp,(float)item);
+            }
+            return children[(int)temp];
+        }
+        Vector2 rolloutPolicy(Vector2[] possibleMoves) {
+            Vector2 possibleMove = possibleMoves[UnityEngine.Random.Range(0,possibleMoves.Length)];
+            return possibleMove;
+        }
+        monteCarloNode treePolicy() {
+            monteCarloNode current = this;
+            if (!hasGottenUntriedActions) {
+                untriedActions = this.untried_Actions();
+                hasGottenUntriedActions = true;
+            }
+            while (! current.isTerminalNode()) {
+                if (!current.isFullyExpanded()) {
+                    return current.expand();
+                }else {
+                    current = current.bestChild();
+                }
+            }
+            return current;
+        }
+        public monteCarloNode bestAction() {
+            monteCarloNode v;
+            int simulationNum = 100;
+            for (int i = 0; i < simulationNum; i++) {
+                v = this.treePolicy();
+                int reward = v.rollout();
+                v.backpropagate(reward);
+            }
+            return this.bestChild(0.1f);
+        }
+    }
+    }
