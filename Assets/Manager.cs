@@ -15,7 +15,7 @@ public class pieces { // piece class.
 
 
 public class boardState { // class handling board states for the monete carlo tree search class
-    Manager manager;
+    Manager manager = new Manager();
     public pieces[,] board = new pieces[8,8];
     public int turn;
     public boardState (pieces[,] Board, int Col) {
@@ -24,6 +24,7 @@ public class boardState { // class handling board states for the monete carlo tr
     }
     public boardState Move(Vector2 pos) {
         boardState temp = new boardState ((manager.placeOnArray(pos, this.turn, this.board)), this.turn);
+        temp.turn = temp.turn == 1? 2: 1;
         return temp;
     }
     public bool isGameOver() {
@@ -40,21 +41,23 @@ public class boardState { // class handling board states for the monete carlo tr
     public int gameResult() {
         if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),turn,this.board) > (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn == 1 ? 0: 1),this.turn == 1 ? 0: 1,this.board))) {
             return 1;
-        }else {return 2;
+        }else {
+            return 2;
         }
     }
 }
 
 public class monteCarloNode{ // class handling monte carlo nodes
-    Manager manager;
-    boardState state;
+    Manager manager = new Manager();
+    public boardState state;
     monteCarloNode parent = null;
     Vector2 ParentAction = new Vector2 (-1,-1);
     monteCarloNode[] children = new monteCarloNode[64];
     int numberOfVisits = 0;
-    int[] results = new int[2];
-    
+    int[] results = new int[3];
+    bool hasGottenUntriedActions = false;
     public List<Vector2> untriedActions = new List<Vector2>();
+    
     
     
     public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction) { // constructer for the class
@@ -76,6 +79,10 @@ public class monteCarloNode{ // class handling monte carlo nodes
         return this.numberOfVisits;
     }
     monteCarloNode expand() {
+        if (!hasGottenUntriedActions) {
+            untriedActions = this.untried_Actions();
+            hasGottenUntriedActions = true;
+        }
         Vector2 action = this.untriedActions[0];
         this.untriedActions.RemoveAt(0);
         boardState nextState = this.state.Move(action);
@@ -115,7 +122,6 @@ public class monteCarloNode{ // class handling monte carlo nodes
             choicesWeights.Add(c.q() / c.n() + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
         }
         foreach (double item in choicesWeights) {
-            
             temp = Mathf.Max((float)temp,(float)item);
         }
         return children[(int)temp];
@@ -126,6 +132,10 @@ public class monteCarloNode{ // class handling monte carlo nodes
     }
     monteCarloNode treePolicy() {
         monteCarloNode current = this;
+        if (!hasGottenUntriedActions) {
+            untriedActions = this.untried_Actions();
+            hasGottenUntriedActions = true;
+        }
         while (! current.isTerminalNode()) {
             if (!current.isFullyExpanded()) {
                 return current.expand();
@@ -135,7 +145,7 @@ public class monteCarloNode{ // class handling monte carlo nodes
         }
         return current;
     }
-    monteCarloNode bestAction() {
+    public monteCarloNode bestAction() {
         monteCarloNode v;
         int simulationNum = 100;
         for (int i = 0; i < simulationNum; i++) {
@@ -151,7 +161,9 @@ public class monteCarloNode{ // class handling monte carlo nodes
 
 public class Manager : MonoBehaviour 
 {
-    
+    boardState state;
+    monteCarloNode MonteCarloNode;
+    public Vector2 selectedMove;
     public class placeCheck {
         public bool canPlace;
         public int endPos;
@@ -219,11 +231,11 @@ public class Manager : MonoBehaviour
     }
     public void mainPlace(Vector2 pos, int colour, pieces[,] board) {
         if (CheckPlace360(pos, colour,board)) {
-        GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f,pos.y),Quaternion.identity, colour == 0? whiteParent : blackParent);
-        lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; 
-        board[(int)pos.x,(int)pos.y] = new pieces (lastCreated, colour,pos);
-        
-        ChangeTurn(colour);    
+            GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f,pos.y),Quaternion.identity, colour == 0? whiteParent : blackParent);
+            lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; 
+            board[(int)pos.x,(int)pos.y] = new pieces (lastCreated, colour,pos);
+            
+            ChangeTurn(colour);    
         }
         for (int i =0; i < 8; i++) {
             placeCheck check = CheckPlace(i, pos, colour, board);
@@ -237,7 +249,7 @@ public class Manager : MonoBehaviour
         board[(int)pos.x, (int)pos.y] = new pieces(null, colour, pos);
         for (int i = 0; i < 8; i++) {
             placeCheck check  = CheckPlace(i, pos, colour, board);
-            changePeices(check, board);
+            changePieceArr(check, board);
         }
         return board;
 
@@ -328,6 +340,13 @@ public class Manager : MonoBehaviour
             board[(int)tempPos.x,(int)tempPos.y].piece.transform.GetComponent<Renderer>().material = check.Colour == 0 ? whiteMat:blackMat; 
             tempPos += intToDir(check.direction);
 
+        }
+    }
+    void changePieceArr(placeCheck check, pieces[,] board) {
+        Vector2 tempPos = check.startPos;
+        for (int i = 0; i < check.endPos; i++) {
+            board[(int)tempPos.x, (int)tempPos.y].colour = check.Colour;
+            tempPos += intToDir(check.direction);
         }
     }
     void delPiece(pieces[,] board, Vector2 pos) { // used to delete a specific piece from the board.
@@ -457,6 +476,13 @@ public class Manager : MonoBehaviour
             StartCoroutine(ui.displayWinText(colour));
             
     }
+    }
+    public void createMonteNode() {
+        pieces[,] tempBoard = new pieces[8,8];
+        saveBoard(tempBoard, pieceArr);
+        monteCarloNode root = new monteCarloNode((new boardState(pieceArr, currentTurn)), null, new Vector2(-1,-1)); 
+        monteCarloNode selectedNode = root.bestAction();
+        LogBoard( selectedNode.state.board);
     }
 
 
