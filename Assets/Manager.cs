@@ -106,9 +106,40 @@ public class monteCarloNode{
         return this.untriedActions.Count == 0;
     }
     monteCarloNode bestChild(float cParam = 0.1f) {
+        double temp = 0f;
         List<double> choicesWeights = new List<double>();
         foreach (monteCarloNode c in this.children) {
             choicesWeights.Add(c.q() / c.n() + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
+        }
+        foreach (double item in choicesWeights) {
+            
+            temp = Mathf.Max((float)temp,(float)item);
+        }
+        return children[(int)temp];
+    }
+    Vector2 rolloutPolicy(Vector2[] possibleMoves) {
+        Vector2 possibleMove = possibleMoves[Random.Range(0,possibleMoves.Length)];
+        return possibleMove;
+    }
+    monteCarloNode treePolicy() {
+        monteCarloNode current = this;
+        while (! current.isTerminalNode()) {
+            if (!current.isFullyExpanded()) {
+                return current.expand();
+            }else {
+                current = current.bestChild();
+            }
+        }
+        return current;
+    }
+    monteCarloNode bestAction() {
+        monteCarloNode v;
+        int simulationNum = 100;
+        for (int i = 0; i < simulationNum; i++) {
+            v = this.treePolicy();
+            int reward = v.rollout();
+            v.backpropagate(reward);
+        return this.bestChild(0.1f);
         }
     }
 }
