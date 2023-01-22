@@ -14,7 +14,7 @@ public class pieces { // piece class.
     }
 
 
-public class boardState {
+public class boardState { // class handling board states for the monete carlo tree search class
     Manager manager;
     public pieces[,] board = new pieces[8,8];
     public int turn;
@@ -45,7 +45,7 @@ public class boardState {
     }
 }
 
-public class monteCarloNode{
+public class monteCarloNode{ // class handling monte carlo nodes
     Manager manager;
     boardState state;
     monteCarloNode parent = null;
@@ -56,12 +56,13 @@ public class monteCarloNode{
     
     public List<Vector2> untriedActions = new List<Vector2>();
     
-    public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction) {
+    
+    public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction) { // constructer for the class
         state = _state;
         parent = _parent;
         ParentAction = _parentAction;
     }
-    List<Vector2> untried_Actions() {
+    List<Vector2> untried_Actions() { 
         this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
         return untriedActions;
     }
@@ -88,12 +89,14 @@ public class monteCarloNode{
     }
     int rollout() {
         boardState currentRolloutState = this.state;
-        while (! currentRolloutState.isGameOver()) {
+        while (!currentRolloutState.isGameOver()) {
             Vector2[] possibleMoves = currentRolloutState.getLegalActions();
             Vector2 action = this.rolloutPolicy(possibleMoves);
             currentRolloutState = currentRolloutState.Move(action);
-        return currentRolloutState.gameResult();
         }
+        return currentRolloutState.gameResult();
+        
+        
     }
     void backpropagate(int result) {
         this.numberOfVisits += 1;
@@ -139,8 +142,8 @@ public class monteCarloNode{
             v = this.treePolicy();
             int reward = v.rollout();
             v.backpropagate(reward);
-        return this.bestChild(0.1f);
         }
+        return this.bestChild(0.1f);
     }
 }
 
