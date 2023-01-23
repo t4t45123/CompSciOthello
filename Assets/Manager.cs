@@ -139,7 +139,7 @@ public class Manager : MonoBehaviour
         
     }
     public pieces[,] placeOnArray(Vector2 pos, int colour, pieces[,] board) {
-        //if (pos.x >= 0 & pos.x < 8 & pos.y >= 0 & pos.y <8) {
+        if (pos.x >= 0 & pos.x < 8 & pos.y >= 0 & pos.y <8) {
 
             
             board[(int)pos.x, (int)pos.y] = new pieces(null, colour, pos);
@@ -147,7 +147,7 @@ public class Manager : MonoBehaviour
                 placeCheck check  = CheckPlace(i, pos, colour, board);
                 changePieceArr(check, board);
             }
-            //}
+        }
         return board;
 
     }
@@ -379,15 +379,20 @@ public class Manager : MonoBehaviour
         saveBoard(tempBoard, pieceArr);
         monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2(-1,-1)); 
         monteCarloNode selectedNode = root.bestAction();
-        LogBoard( selectedNode.state.board);
+        Debug.Log (LogBoard(selectedNode.state.board));
+        monteCarloNode newNode = selectedNode;
+        while (newNode.parent != null) {
+            newNode = newNode.parent;
+        }
+        Debug.Log(LogBoard(newNode.state.board));
     }
 
     public class monteCarloNode{ // class handling monte carlo nodes
         Manager manager = new Manager();
         public boardState state;
-        monteCarloNode parent = null;
+        public monteCarloNode parent = null;
         Vector2 ParentAction = new Vector2 (-1,-1);
-        monteCarloNode[] children = new monteCarloNode[64];
+        List <monteCarloNode> children = new List<monteCarloNode>();
         int numberOfVisits = 0;
         int[] results = new int[3];
         bool hasGottenUntriedActions = false;
@@ -402,9 +407,6 @@ public class Manager : MonoBehaviour
         }
         List<Vector2> untried_Actions() { 
             this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
-            foreach(Vector2 i in this.untriedActions) {
-                Debug.Log(i);
-            }
             return untriedActions;
         }
 
@@ -429,13 +431,13 @@ public class Manager : MonoBehaviour
             if (action != nullMove) {
                 boardState nextState = this.state.Move(action);
                 childNode = new monteCarloNode(nextState,this, action);
-                this.children[this.children.Length -1] = childNode;
+                this.children.Add (childNode);
                 
             }
             return childNode;
 
         }
-        bool isTerminalNode() {
+        public bool isTerminalNode() {
             return this.state.isGameOver();
         }
         int rollout() {
@@ -443,6 +445,7 @@ public class Manager : MonoBehaviour
             while (!currentRolloutState.isGameOver()) {
                 Vector2[] possibleMoves = currentRolloutState.getLegalActions();
                 Vector2 action = this.rolloutPolicy(possibleMoves);
+                //Debug.Log(action);
                 currentRolloutState = currentRolloutState.Move(action);
             }
             return currentRolloutState.gameResult();
@@ -456,9 +459,11 @@ public class Manager : MonoBehaviour
                 this.parent.backpropagate(result);
             }
         }
+
         bool isFullyExpanded() {
             return this.untriedActions.Count == 0;
         }
+
         monteCarloNode bestChild(float cParam = 0.1f) {
             double temp = 0f;
             List<double> choicesWeights = new List<double>();
@@ -470,10 +475,12 @@ public class Manager : MonoBehaviour
             }
             return children[(int)temp];
         }
+
         Vector2 rolloutPolicy(Vector2[] possibleMoves) {
             Vector2 possibleMove = possibleMoves[UnityEngine.Random.Range(0,possibleMoves.Length)];
             return possibleMove;
         }
+
         monteCarloNode treePolicy() {
             monteCarloNode current = this;
             if (!hasGottenUntriedActions) {
@@ -489,6 +496,7 @@ public class Manager : MonoBehaviour
             }
             return current;
         }
+
         public monteCarloNode bestAction() {
             monteCarloNode v;
             int simulationNum = 100;
