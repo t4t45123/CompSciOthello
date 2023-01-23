@@ -13,7 +13,7 @@ public class UserDatabase : MonoBehaviour
     string adminUserName = "ADMIN";
     string adminPass = "admin";
     void Start() {
-        Debug.Log (Application.persistentDataPath);
+        //Debug.Log (Application.persistentDataPath);
         InitializeDatabase();
     }
     void InitializeDatabase() { // this Creates the database and is called when the script is loaded
