@@ -115,6 +115,7 @@ public class Manager : MonoBehaviour
     public pieces[,] startBoard = new pieces[8,8];
     public Vector2 currentMousePos;
     public int currentTurn = 0;
+    int monteItterations;
 
     // scripts
     [SerializeField] HoverChecker hoverChecker;
@@ -408,7 +409,7 @@ public class Manager : MonoBehaviour
     public void createMonteNode() { // used to create a monteCarlo node based on the current state of the board
         pieces[,] tempBoard = new pieces[8,8];
         saveBoard(tempBoard, pieceArr);
-        monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2(-1,-1)); 
+        monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2(-1,-1), monteItterations); 
         monteCarloNode selectedNode = root.bestAction();
         //Debug.Log (LogBoard(selectedNode.state.board));
         //monteCarloNode newNode = selectedNode;
@@ -419,14 +420,30 @@ public class Manager : MonoBehaviour
         //Debug.Log(selectedNode.ParentAction);
     
     }
-    public void AIMove() {
+    void aiDifficultySelector(int difficulty) {
+        int returnItterations = 0;
+        switch ( difficulty ) {
+            case 0:
+                returnItterations = 300;
+                break;
+            case 1:
+                returnItterations = 1000;
+                break;
+            case 2:
+                returnItterations =  4000;
+                break;
+        }
+        monteItterations = returnItterations;
+    }
+    public bool AIMove() {
         pieces[,] tempBoard = new pieces[8,8];
         saveBoard(tempBoard, pieceArr);
-        monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2 (-1,-1));
+        monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2 (-1,-1), monteItterations);
         Debug.Log("monteStarted");
         monteCarloNode selectedNode = root.bestAction();
         Debug.Log (selectedNode.ParentAction +"monte move");
         mainPlace(selectedNode.ParentAction, currentTurn, pieceArr, true);
+        return (true);
         //ChangeTurn(currentTurn);
     }
 
@@ -440,17 +457,18 @@ public class Manager : MonoBehaviour
         int[] results = new int[3];
         bool hasGottenUntriedActions = false;
         public List<Vector2> untriedActions = new List<Vector2>();
-        
+        public int itterations = 100;
         
         List<Vector2> performedActions = new List<Vector2>();
         int currentTurn;
         
         
         
-        public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction ) { // constructer for the class
+        public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction, int _Itterations ) { // constructer for the class
             state = _state;
             parent = _parent;
             ParentAction = _parentAction;
+            itterations = _Itterations;
         }
         List<Vector2> untried_Actions() { // all of the possible actions on the board
             //Debug.Log("called untriedActions");
@@ -523,7 +541,7 @@ public class Manager : MonoBehaviour
             //Debug.Log(manager.LogBoard(this.state.board));
             //Debug.Log(this.state.board == nextState.board);
             nextState.turn = nextState.turn == 1 ? 2:1;
-            childNode = new monteCarloNode(nextState,this, action);
+            childNode = new monteCarloNode(nextState,this, action, itterations);
             this.children.Add (childNode);
             return childNode;
         }
@@ -585,7 +603,7 @@ public class Manager : MonoBehaviour
         }
 
         monteCarloNode treePolicy() { // selected a node to rollout
-            monteCarloNode current = new monteCarloNode(null,null,new Vector2 (-1,-1));
+            monteCarloNode current = new monteCarloNode(null,null,new Vector2 (-1,-1), itterations);
             current = this;
             
             //Debug.Log(this.isFullyExpanded() +"fullyExpanded");
@@ -609,7 +627,7 @@ public class Manager : MonoBehaviour
 
         public monteCarloNode bestAction() { // find the best action to play.
             monteCarloNode v;
-            int simulationNum = 10000;
+            int simulationNum = 100;
             for (int i = 0; i < simulationNum; i++) {
                 v = this.treePolicy();
                 if (v != null) {

@@ -12,6 +12,7 @@ public class UImanager : MonoBehaviour
     [SerializeField] GameObject PreGameMenu;
     [SerializeField] GameObject playMenu;
     [SerializeField] GameObject adminButtonParent;
+    [SerializeField] GameObject difficultyParent;
 
     //Script refernece
     [SerializeField] Manager boardManager;
@@ -26,7 +27,25 @@ public class UImanager : MonoBehaviour
     public TextMeshProUGUI whiteCountText;
     public TextMeshProUGUI blackCountText;
     public TextMeshProUGUI turnText;
+    public TMPro.TMP_Dropdown difficultyDropdown;
+    public TMPro.TMP_Dropdown playerSelector;
+    void Update() { // called every frame used to check how long the error has been displayed for
+        if (lastDisplayTime + errorDisplayDuration < Time.time) {
+            ErrorTextObject.SetActive(false);
+        }
+        difficultydisplay();
 
+        
+    }
+    void difficultydisplay() {
+        if (playerSelector.value == 0) {
+            difficultyParent.SetActive(false); 
+            boardManager.isMonteEnabled = false;
+        }else{
+            difficultyParent.SetActive(true);
+            boardManager.isMonteEnabled = true;
+        }
+    }
     void DisableAllScreens() { // this is used to hide all screens, so not more than one screen is displayed at once
         loginScreen.SetActive(false);
         MainMenu.SetActive(false);
@@ -90,12 +109,7 @@ public class UImanager : MonoBehaviour
         errorText.text = message;
         ErrorTextObject.SetActive(true);
     }
-    void Update() { // called every frame used to check how long the error has been displayed for
-        if (lastDisplayTime + errorDisplayDuration < Time.time) {
-            ErrorTextObject.SetActive(false);
-        }
-        
-    }
+
     public void closeGame() { // close the game 
         Application.Quit();
     }
