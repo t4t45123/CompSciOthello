@@ -29,7 +29,9 @@ public class boardState { // class handling board states for the monete carlo tr
         return temp;
     }
     public bool isGameOver() {
-        Debug.Log("moveAmount" + manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board));
+
+        //Debug.Log (manager.LogBoard(this.board));
+        //Debug.Log("moveAmount" + manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board));
         if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board) == 0) {
             return true;
         }else {
@@ -124,13 +126,15 @@ public class Manager : MonoBehaviour
         board[(int)pos.x,(int)pos.y] = new pieces(lastCreated, colour,pos);
         return lastCreated;
     }
-    public void mainPlace(Vector2 pos, int colour, pieces[,] board) {
+    public void mainPlace(Vector2 pos, int colour, pieces[,] board, bool changeTurn) {
         if (CheckPlace360(pos, colour,board)) {
             GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f,pos.y),Quaternion.identity, colour == 0? whiteParent : blackParent);
             lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; 
             board[(int)pos.x,(int)pos.y] = new pieces (lastCreated, colour,pos);
+            if (changeTurn){
+                ChangeTurn(colour); 
+            }
             
-            ChangeTurn(colour);    
         }
         for (int i =0; i < 8; i++) {
             placeCheck check = CheckPlace(i, pos, colour, board);
@@ -397,7 +401,7 @@ public class Manager : MonoBehaviour
         monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2 (-1,-1));
         monteCarloNode selectedNode = root.bestAction();
         Debug.Log (selectedNode.ParentAction);
-        mainPlace(selectedNode.ParentAction, currentTurn, pieceArr);
+        mainPlace(selectedNode.ParentAction, currentTurn, pieceArr, true);
         //ChangeTurn(currentTurn);
     }
 
@@ -486,7 +490,11 @@ public class Manager : MonoBehaviour
             monteCarloNode childNode = null;
             //Vector2 nullMove = new Vector2(-1,-1);
             //if (action != nullMove) {
-                boardState nextState = this.state.Move(action);
+                boardState nextState =  new boardState(null,0);
+
+                nextState = this.state;
+                nextState = nextState.Move(action);
+                nextState.turn = nextState.turn == 1 ? 2:1;
                 childNode = new monteCarloNode(nextState,this, action);
                 this.children.Add (childNode);
             //}
@@ -527,11 +535,11 @@ public class Manager : MonoBehaviour
             
             double temp = 0f;
             int bestIndex = 0;
-            Debug.Log(this.children.Count);
+            Debug.Log(this.children.Count + " - child count");
             List<double> choicesWeights = new List<double>();
             foreach (monteCarloNode c in this.children) {
                 choicesWeights.Add((c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
-                Debug.Log(c.n() + " n || q " + c.q());
+                //Debug.Log(c.n() + " n || q " + c.q());
                 
             }
             
@@ -542,9 +550,9 @@ public class Manager : MonoBehaviour
                     bestIndex = i;
                 }
             }
-            Debug.Log(choicesWeights.Count + " length");
+            //Debug.Log(choicesWeights.Count + " length");
             //Debug.Log (children[0]);
-            Debug.Log(bestIndex);
+            Debug.Log(bestIndex + " - index Chosen");
             return children[bestIndex];
         }
 
@@ -554,15 +562,18 @@ public class Manager : MonoBehaviour
         }
 
         monteCarloNode treePolicy() { // selected a node to rollout
-            monteCarloNode current = this;
+            monteCarloNode current = new monteCarloNode(null,null,new Vector2 (-1,-1));
+            current = this;
+            
             //Debug.Log(this.isFullyExpanded() +"fullyExpanded");
             if (!hasGottenUntriedActions) {
                 this.untriedActions = this.untried_Actions();
                 hasGottenUntriedActions = true;
             }
-            Debug.Log(this.isFullyExpanded() +"fullyExpanded");
-            Debug.Log(this.state.isGameOver() +"is game Over");
-            Debug.Log(this.ParentAction + "parent action");
+            // Debug.Log(this.isFullyExpanded() +"fullyExpanded");
+            // Debug.Log(this.state.isGameOver() +"is game Over");
+            Debug.Log (manager.LogBoard(this.state.board) + "\n \n" +this.isFullyExpanded() +"fullyExpanded" + "\n \n " +this.state.isGameOver() +"is game Over");
+            //Debug.Log(this.ParentAction + "parent action");
             while (! current.isTerminalNode()) {
                 if (!current.isFullyExpanded()) {
                     return current.expand();
@@ -575,7 +586,7 @@ public class Manager : MonoBehaviour
 
         public monteCarloNode bestAction() { // find the best action to play.
             monteCarloNode v;
-            int simulationNum = 100;
+            int simulationNum = 150;
             for (int i = 0; i < simulationNum; i++) {
                 v = this.treePolicy();
                 if (v != null) {
