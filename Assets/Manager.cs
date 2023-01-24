@@ -29,7 +29,8 @@ public class boardState { // class handling board states for the monete carlo tr
         return temp;
     }
     public bool isGameOver() {
-        if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),turn,this.board) == 0) {
+        Debug.Log("moveAmount" + manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board));
+        if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board) == 0) {
             return true;
         }else {
             return false;
@@ -438,19 +439,31 @@ public class Manager : MonoBehaviour
             //     }
             // }
             // return untriedActions;
-            untriedActions = new List<Vector2>(manager.getPossibleMoves(this.state.board, this.state.turn));
-            for(int i = 0; i < this.untriedActions.Count; i++){
+            // untriedActions = new List<Vector2>(manager.getPossibleMoves(this.state.board, this.state.turn));
+            // for(int i = 0; i < this.untriedActions.Count; i++){
                 
-                foreach(Vector2 j in this.performedActions) {
-                    //Debug.Log(j);
-                    if (this.untriedActions[i] == j || this.untriedActions[i]== new Vector2(-1,-1)) {
-                        untriedActions.RemoveAt(i);
-                    }
-                }
+            //     foreach(Vector2 j in this.performedActions) {
+            //         //Debug.Log(j);
+            //         if (this.untriedActions[i] == j || this.untriedActions[i]== new Vector2(-1,-1)) {
+            //             untriedActions.RemoveAt(i);
+            //         }
+            //     }
                 //Debug.Log(untriedActions[i] + "untried actions ");
+            
+        
+            this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
+            int total = this.untriedActions.Count;
+            for (int i = 0; i < total; i++) {
+                untriedActions.Remove(new Vector2(-1,-1));
+            }
+            //Debug.Log(this.untriedActions.Count);
+            foreach(Vector2 v in this.untriedActions) {
+                //Debug.Log(v);
             }
             return untriedActions;
-        }
+            
+                
+            }
 
         int q() { //returns the differnce betweens the wins and losses of the current move
             int wins = this.results[1];
@@ -461,24 +474,22 @@ public class Manager : MonoBehaviour
             return this.numberOfVisits;
         }
         monteCarloNode expand() { // expands the tree by creating a new child node, and taking out of the untried actions, and adds that child to the list of children
+            Debug.Log("called Expand");
             if (!hasGottenUntriedActions) {
                 this.untriedActions = this.untried_Actions();
                 hasGottenUntriedActions = true;
             }
-            
-            
-            
             Vector2 action = this.untriedActions[0];
             
             this.untriedActions.RemoveAt(0);
             //this.untriedActions.Sort();
             monteCarloNode childNode = null;
-            Vector2 nullMove = new Vector2(-1,-1);
-            if (action != nullMove) {
+            //Vector2 nullMove = new Vector2(-1,-1);
+            //if (action != nullMove) {
                 boardState nextState = this.state.Move(action);
                 childNode = new monteCarloNode(nextState,this, action);
                 this.children.Add (childNode);
-            }
+            //}
 
             return childNode;
         }
@@ -544,12 +555,14 @@ public class Manager : MonoBehaviour
 
         monteCarloNode treePolicy() { // selected a node to rollout
             monteCarloNode current = this;
-            
+            //Debug.Log(this.isFullyExpanded() +"fullyExpanded");
             if (!hasGottenUntriedActions) {
                 this.untriedActions = this.untried_Actions();
                 hasGottenUntriedActions = true;
             }
-            
+            Debug.Log(this.isFullyExpanded() +"fullyExpanded");
+            Debug.Log(this.state.isGameOver() +"is game Over");
+            Debug.Log(this.ParentAction + "parent action");
             while (! current.isTerminalNode()) {
                 if (!current.isFullyExpanded()) {
                     return current.expand();
