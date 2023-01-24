@@ -40,7 +40,21 @@ public class boardState { // class handling board states for the monete carlo tr
     }
     public Vector2[] getLegalActions() {
         Vector2[] tempArr = manager.getPossibleMoves(this.board, this.turn);
-        return tempArr;
+        Vector2[] legalActions = new Vector2[64];
+        int i = 0;
+        foreach (Vector2 temp in tempArr) {
+            if (temp != new Vector2(-1,-1)) {
+                if (this.board[(int)temp.x,  (int)temp.y].colour == 9) {
+                    legalActions[i] = (temp);
+                }else {
+                    legalActions[i] = new Vector2(-1,-1);
+                }
+            }
+            
+            i++;
+        }
+        
+        return legalActions;
     }
     public int gameResult() {
         if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),turn,this.board) > (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn == 1 ? 0: 1),this.turn == 1 ? 0: 1,this.board))) {
@@ -49,6 +63,16 @@ public class boardState { // class handling board states for the monete carlo tr
             return 2;
         }
     }
+    // public boardState saveState(boardState newState, boardState oldState)  {
+    //     pieces[,] board = new pieces[8,8];
+    //     newState.board = board;
+    //     for (int i = 0; i < 8; i ++) {
+    //         for (int j = 0; j < 8; j++) {
+    //             newState.board[i,j] = oldState.board[i,j];
+    //         }
+    //     }
+    //     return newState;
+    // }
 }
 
 
@@ -392,15 +416,16 @@ public class Manager : MonoBehaviour
         //     newNode = newNode.parent;
         // }
         //Debug.Log((newNode.ParentAction));
-        Debug.Log(selectedNode.ParentAction);
+        //Debug.Log(selectedNode.ParentAction);
     
     }
     public void AIMove() {
         pieces[,] tempBoard = new pieces[8,8];
         saveBoard(tempBoard, pieceArr);
         monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2 (-1,-1));
+        Debug.Log("monteStarted");
         monteCarloNode selectedNode = root.bestAction();
-        Debug.Log (selectedNode.ParentAction);
+        Debug.Log (selectedNode.ParentAction +"monte move");
         mainPlace(selectedNode.ParentAction, currentTurn, pieceArr, true);
         //ChangeTurn(currentTurn);
     }
@@ -426,7 +451,6 @@ public class Manager : MonoBehaviour
             state = _state;
             parent = _parent;
             ParentAction = _parentAction;
-            
         }
         List<Vector2> untried_Actions() { // all of the possible actions on the board
             //Debug.Log("called untriedActions");
@@ -465,8 +489,6 @@ public class Manager : MonoBehaviour
                 //Debug.Log(v);
             }
             return untriedActions;
-            
-                
             }
 
         int q() { //returns the differnce betweens the wins and losses of the current move
@@ -478,27 +500,31 @@ public class Manager : MonoBehaviour
             return this.numberOfVisits;
         }
         monteCarloNode expand() { // expands the tree by creating a new child node, and taking out of the untried actions, and adds that child to the list of children
-            Debug.Log("called Expand");
+            //Debug.Log("called Expand");
             if (!hasGottenUntriedActions) {
                 this.untriedActions = this.untried_Actions();
                 hasGottenUntriedActions = true;
             }
             Vector2 action = this.untriedActions[0];
-            
             this.untriedActions.RemoveAt(0);
-            //this.untriedActions.Sort();
             monteCarloNode childNode = null;
-            //Vector2 nullMove = new Vector2(-1,-1);
-            //if (action != nullMove) {
-                boardState nextState =  new boardState(null,0);
 
-                nextState = this.state;
-                nextState = nextState.Move(action);
-                nextState.turn = nextState.turn == 1 ? 2:1;
-                childNode = new monteCarloNode(nextState,this, action);
-                this.children.Add (childNode);
-            //}
-
+            pieces[,] board = new pieces[8,8];
+            boardState nextState =  new boardState(board,0);
+            for (int i = 0; i <8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    nextState.board[i,j] =  new pieces(null, this.state.board[i,j].colour, new Vector2 (i,j));
+                }
+            }
+            //nextState.board = this.state.board;
+            //nextState = nextState.saveState(nextState, this.state);
+            nextState = nextState.Move(action);
+            //Debug.Log(manager.LogBoard(nextState.board));
+            //Debug.Log(manager.LogBoard(this.state.board));
+            //Debug.Log(this.state.board == nextState.board);
+            nextState.turn = nextState.turn == 1 ? 2:1;
+            childNode = new monteCarloNode(nextState,this, action);
+            this.children.Add (childNode);
             return childNode;
         }
         public bool isTerminalNode() { // returns true if the game is over
@@ -530,29 +556,26 @@ public class Manager : MonoBehaviour
 
         monteCarloNode bestChild(float cParam = 0.1f) { // used to find the best child out of the list of children.
             
-            //this.untriedActions = this.untried_Actions();
-            
-            
-            double temp = 0f;
+            //this.untriedActions = this.untried_Actions();            
+            double temp = -1000f;
             int bestIndex = 0;
-            Debug.Log(this.children.Count + " - child count");
+            //Debug.Log(this.children.Count + " - child count");
             List<double> choicesWeights = new List<double>();
             foreach (monteCarloNode c in this.children) {
                 choicesWeights.Add((c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
-                //Debug.Log(c.n() + " n || q " + c.q());
-                
+                //Debug.Log(c.n() + " n || q " + c.q() + " || " + (c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
             }
             
             for (int i = 0; i < choicesWeights.Count; i++) { // finds the index of the largest number 
                 
-                if (temp >= choicesWeights[i]) {
+                if (temp <= choicesWeights[i]) {
                     temp = choicesWeights[i];
                     bestIndex = i;
                 }
             }
             //Debug.Log(choicesWeights.Count + " length");
             //Debug.Log (children[0]);
-            Debug.Log(bestIndex + " - index Chosen");
+            //Debug.Log(bestIndex + " - index Chosen");
             return children[bestIndex];
         }
 
@@ -572,7 +595,7 @@ public class Manager : MonoBehaviour
             }
             // Debug.Log(this.isFullyExpanded() +"fullyExpanded");
             // Debug.Log(this.state.isGameOver() +"is game Over");
-            Debug.Log (manager.LogBoard(this.state.board) + "\n \n" +this.isFullyExpanded() +"fullyExpanded" + "\n \n " +this.state.isGameOver() +"is game Over");
+            //Debug.Log (manager.LogBoard(this.state.board) + "\n \n" +this.isFullyExpanded() +"fullyExpanded" + "\n \n " +this.state.isGameOver() +"is game Over");
             //Debug.Log(this.ParentAction + "parent action");
             while (! current.isTerminalNode()) {
                 if (!current.isFullyExpanded()) {
@@ -586,17 +609,15 @@ public class Manager : MonoBehaviour
 
         public monteCarloNode bestAction() { // find the best action to play.
             monteCarloNode v;
-            int simulationNum = 150;
+            int simulationNum = 10000;
             for (int i = 0; i < simulationNum; i++) {
                 v = this.treePolicy();
                 if (v != null) {
                     int reward = v.rollout();
                     v.backpropagate(reward);
                 }
-                
-                
             }
-            monteCarloNode finalNode =  this.bestChild(0.1f);
+            monteCarloNode finalNode =  this.bestChild(1.4142f);
             //performedActions.Add (finalNode.ParentAction);
             return finalNode;
         }
