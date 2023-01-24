@@ -7554,6 +7554,7 @@ MonoBehaviour:
   PreGameMenu: {fileID: 1543380887}
   playMenu: {fileID: 1570346238}
   adminButtonParent: {fileID: 1489334525}
+  difficultyParent: {fileID: 2054974959}
   boardManager: {fileID: 808759789}
   accountManager: {fileID: 1865623633}
   errorDisplayDuration: 5
@@ -7563,6 +7564,8 @@ MonoBehaviour:
   whiteCountText: {fileID: 61068040}
   blackCountText: {fileID: 1894155623}
   turnText: {fileID: 464208998}
+  difficultyDropdown: {fileID: 615342654}
+  playerSelector: {fileID: 712636959}
 --- !u!4 &1448848126
 Transform:
   m_ObjectHideFlags: 0
