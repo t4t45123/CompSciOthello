@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class UImanager : MonoBehaviour
@@ -13,6 +14,8 @@ public class UImanager : MonoBehaviour
     [SerializeField] GameObject playMenu;
     [SerializeField] GameObject adminButtonParent;
     [SerializeField] GameObject difficultyParent;
+    [SerializeField] GameObject boardParent;
+
 
     //Script refernece
     [SerializeField] Manager boardManager;
@@ -23,12 +26,13 @@ public class UImanager : MonoBehaviour
     [SerializeField] float lastDisplayTime;
     public bool winTextActive = false;
 
-
+    //UI elements
     public TextMeshProUGUI whiteCountText;
     public TextMeshProUGUI blackCountText;
     public TextMeshProUGUI turnText;
     public TMPro.TMP_Dropdown difficultyDropdown;
     public TMPro.TMP_Dropdown playerSelector;
+    public Toggle shadowMoveToggle;
     void Update() { // called every frame used to check how long the error has been displayed for
         if (lastDisplayTime + errorDisplayDuration < Time.time) {
             ErrorTextObject.SetActive(false);
@@ -51,6 +55,7 @@ public class UImanager : MonoBehaviour
         MainMenu.SetActive(false);
         PreGameMenu.SetActive(false);
         playMenu.SetActive(false);
+        boardParent.SetActive(false);
     }
     public void EnableLoginScreen() { // this is used to enable the login screen at the start of the game
         DisableAllScreens();
@@ -72,6 +77,9 @@ public class UImanager : MonoBehaviour
         }else {
             adminButtonParent.SetActive(false);
         }
+        boardParent.SetActive(true);
+        ResetMainBoard();
+        boardManager.currentTurn = 0;
     }
     public void LogPossibleMoves() { // used to log all possible moves into the console for debugging
         for (int i = 0; i < 64; i++) {

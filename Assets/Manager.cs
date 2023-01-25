@@ -2,6 +2,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 public class pieces { // piece class.
     public GameObject piece;
@@ -25,7 +26,6 @@ public class boardState { // class handling board states for the monete carlo tr
     }
     public boardState Move(Vector2 pos) {
         boardState temp = new boardState ((manager.placeOnArray(pos, this.turn, this.board)), this.turn);
-        //temp.turn = temp.turn == 1? 2: 1;
         return temp;
     }
     public bool isGameOver() {
@@ -63,16 +63,7 @@ public class boardState { // class handling board states for the monete carlo tr
             return 2;
         }
     }
-    // public boardState saveState(boardState newState, boardState oldState)  {
-    //     pieces[,] board = new pieces[8,8];
-    //     newState.board = board;
-    //     for (int i = 0; i < 8; i ++) {
-    //         for (int j = 0; j < 8; j++) {
-    //             newState.board[i,j] = oldState.board[i,j];
-    //         }
-    //     }
-    //     return newState;
-    // }
+
 }
 
 
@@ -81,8 +72,7 @@ public class boardState { // class handling board states for the monete carlo tr
 
 public class Manager : MonoBehaviour 
 {
-    boardState state;
-    monteCarloNode MonteCarloNode;
+    
     public bool isMonteEnabled = false;
     public Vector2 selectedMove;
     public class placeCheck {
@@ -110,23 +100,32 @@ public class Manager : MonoBehaviour
     [SerializeField] Transform whiteParent;
     [SerializeField] Transform blackParent;
     [SerializeField] GameObject piece;
-    [SerializeField] UImanager ui;
+    
     public pieces[,] pieceArr = new pieces[8,8];
     public pieces[,] startBoard = new pieces[8,8];
     public Vector2 currentMousePos;
     public int currentTurn = 0;
     int monteItterations;
+    
 
     // scripts
     [SerializeField] HoverChecker hoverChecker;
+    boardState state;
+    monteCarloNode MonteCarloNode;
+    [SerializeField] UImanager ui;
     
     void Update() // called every frame
     {
-        placeShadows(getPossibleMoves(pieceArr,currentTurn));
+        if (ui.shadowMoveToggle.isOn) {
+            placeShadows(getPossibleMoves(pieceArr,currentTurn));
+        }else {
+            delShadowChildren();
+        }
         posSetter();
         //Debug.Log(getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn), currentTurn, pieceArr));
         winCheck(pieceArr,currentTurn);
         ui.updateCountAndTurn(getPieceCount(pieceArr, 0), getPieceCount(pieceArr,1), currentTurn);
+        aiDifficultySelector(ui.difficultyDropdown.value);
     }
     public void posSetter() { // sets the current mouse position var to the location on the board that it is currently hovering over.
         Cell cell = hoverChecker.HoverObject.GetComponentInParent<Cell>();
@@ -420,30 +419,36 @@ public class Manager : MonoBehaviour
         //Debug.Log(selectedNode.ParentAction);
     
     }
-    void aiDifficultySelector(int difficulty) {
+    public void aiDifficultySelector(int difficulty) {
         int returnItterations = 0;
         switch ( difficulty ) {
             case 0:
-                returnItterations = 300;
-                break;
-            case 1:
                 returnItterations = 1000;
                 break;
-            case 2:
-                returnItterations =  4000;
+            case 1:
+                returnItterations = 5000;
                 break;
+            case 2:
+                returnItterations =  10000;
+                break;
+            default:
+            returnItterations = 500;
+            break;
+            
+        
         }
+        
         monteItterations = returnItterations;
     }
-    public bool AIMove() {
+    public void AIMove() {
         pieces[,] tempBoard = new pieces[8,8];
         saveBoard(tempBoard, pieceArr);
         monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2 (-1,-1), monteItterations);
-        Debug.Log("monteStarted");
+        Debug.Log("monteStarted" + monteItterations + " -  Itterations");
         monteCarloNode selectedNode = root.bestAction();
         Debug.Log (selectedNode.ParentAction +"monte move");
         mainPlace(selectedNode.ParentAction, currentTurn, pieceArr, true);
-        return (true);
+        
         //ChangeTurn(currentTurn);
     }
 
@@ -627,7 +632,7 @@ public class Manager : MonoBehaviour
 
         public monteCarloNode bestAction() { // find the best action to play.
             monteCarloNode v;
-            int simulationNum = 100;
+            int simulationNum = itterations;
             for (int i = 0; i < simulationNum; i++) {
                 v = this.treePolicy();
                 if (v != null) {
