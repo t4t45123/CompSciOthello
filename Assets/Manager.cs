@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-public class pieces { // piece class.
+public class pieces { // pieces class used to hold data about the pieces on a board.
     public GameObject piece;
-    
     public int colour;
     public Vector2 position;
     public pieces (GameObject Piece, int col, Vector2 pos) {
@@ -68,7 +67,170 @@ public class boardState { // class handling board states for the monete carlo tr
 
 
 
+    public class monteCarloNode{ // class handling monte carlo nodes
+        Manager manager = new Manager();
+        public boardState state;
+        public monteCarloNode parent = null;
+        public Vector2 ParentAction = new Vector2 (-1,-1);
+        List <monteCarloNode> children = new List<monteCarloNode>();
+        int numberOfVisits = 0;
+        int[] results = new int[3];
+        bool hasGottenUntriedActions = false;
+        public List<Vector2> untriedActions = new List<Vector2>();
+        public int itterations = 100;
+        
+        List<Vector2> performedActions = new List<Vector2>();
+        int currentTurn;
+        public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction, int _Itterations ) { // constructer for the class
+            state = _state;
+            parent = _parent;
+            ParentAction = _parentAction;
+            itterations = _Itterations;
+        }
+        List<Vector2> untried_Actions() { // all of the possible actions on the board
+            this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
+            int total = this.untriedActions.Count;
+            for (int i = 0; i < total; i++) {
+                untriedActions.Remove(new Vector2(-1,-1));
+            }
+            //Debug.Log(this.untriedActions.Count);
+            foreach(Vector2 v in this.untriedActions) {
+                //Debug.Log(v);
+            }
+            return untriedActions;
+            }
 
+        int q() { //returns the differnce betweens the wins and losses of the current move
+            int wins = this.results[1];
+            int losses = this.results[2];
+            return wins - losses;
+        }
+        int n() { // returns the number of visits a piece has
+            return this.numberOfVisits;
+        }
+        monteCarloNode expand() { // expands the tree by creating a new child node, and taking out of the untried actions, and adds that child to the list of children
+            //Debug.Log("called Expand");
+            if (!hasGottenUntriedActions) {
+                this.untriedActions = this.untried_Actions();
+                hasGottenUntriedActions = true;
+            }
+            Vector2 action = this.untriedActions[0];
+            this.untriedActions.RemoveAt(0);
+            monteCarloNode childNode = null;
+
+            pieces[,] board = new pieces[8,8];
+            boardState nextState =  new boardState(board,0);
+            for (int i = 0; i <8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    nextState.board[i,j] =  new pieces(null, this.state.board[i,j].colour, new Vector2 (i,j));
+                }
+            }
+            //nextState.board = this.state.board;
+            //nextState = nextState.saveState(nextState, this.state);
+            nextState = nextState.Move(action);
+            //Debug.Log(manager.LogBoard(nextState.board));
+            //Debug.Log(manager.LogBoard(this.state.board));
+            //Debug.Log(this.state.board == nextState.board);
+            nextState.turn = nextState.turn == 1 ? 2:1;
+            childNode = new monteCarloNode(nextState,this, action, itterations);
+            this.children.Add (childNode);
+            return childNode;
+        }
+        public bool isTerminalNode() { // returns true if the game is over
+            return this.state.isGameOver();
+        }
+        int rollout() { // used to simulate the game until the game is over from the current state.
+            boardState currentRolloutState = this.state;
+            while (!currentRolloutState.isGameOver()) {
+                Vector2[] possibleMoves = currentRolloutState.getLegalActions();
+                Vector2 action = this.rolloutPolicy(possibleMoves);
+                //Debug.Log(action);
+                currentRolloutState = currentRolloutState.Move(action);
+            }
+            return currentRolloutState.gameResult();
+            
+            
+        }
+        void backpropagate(int result) { // used to go back up the tree and change the results of the node.
+            this.numberOfVisits += 1;
+            this.results[result] += 1;
+            if (this.parent != null){
+                this.parent.backpropagate(result);
+            }
+        }
+
+        bool isFullyExpanded() { // used to check if the tree is fully expanded
+            return this.untriedActions.Count == 0;
+        }
+
+monteCarloNode bestChild(float cParam = 0.1f) { // used to find the best child out of the list of children.
+    
+    //this.untriedActions = this.untried_Actions();            
+    double temp = -1000f;
+    int bestIndex = 0;
+    //Debug.Log(this.children.Count + " - child count");
+    List<double> choicesWeights = new List<double>();
+    foreach (monteCarloNode c in this.children) {
+        choicesWeights.Add((c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
+        //Debug.Log(c.n() + " n || q " + c.q() + " || " + (c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
+    }
+    
+    for (int i = 0; i < choicesWeights.Count; i++) { // finds the index of the largest number 
+        
+        if (temp <= choicesWeights[i]) {
+            temp = choicesWeights[i];
+            bestIndex = i;
+        }
+    }
+    //Debug.Log(choicesWeights.Count + " length");
+    //Debug.Log (children[0]);
+    //Debug.Log(bestIndex + " - index Chosen");
+    return children[bestIndex];
+}
+
+Vector2 rolloutPolicy(Vector2[] possibleMoves) { // used to randomly select a move out of the possible moves.
+    Vector2 possibleMove = possibleMoves[UnityEngine.Random.Range(0,possibleMoves.Length)];
+    return possibleMove;
+}
+
+monteCarloNode treePolicy() { // selected a node to rollout
+    monteCarloNode current = new monteCarloNode(null,null,new Vector2 (-1,-1), itterations);
+    current = this;
+    
+    //Debug.Log(this.isFullyExpanded() +"fullyExpanded");
+    if (!hasGottenUntriedActions) {
+        this.untriedActions = this.untried_Actions();
+        hasGottenUntriedActions = true;
+    }
+    // Debug.Log(this.isFullyExpanded() +"fullyExpanded");
+    // Debug.Log(this.state.isGameOver() +"is game Over");
+    //Debug.Log (manager.LogBoard(this.state.board) + "\n \n" +this.isFullyExpanded() +"fullyExpanded" + "\n \n " +this.state.isGameOver() +"is game Over");
+    //Debug.Log(this.ParentAction + "parent action");
+    while (! current.isTerminalNode()) {
+        if (!current.isFullyExpanded()) {
+            return current.expand();
+        }else {
+            current = current.bestChild();
+        }
+    }
+    return current;
+}
+
+public monteCarloNode bestAction() { // find the best action to play.
+    monteCarloNode v;
+    int simulationNum = itterations;
+    for (int i = 0; i < simulationNum; i++) {
+        v = this.treePolicy();
+        if (v != null) {
+            int reward = v.rollout();
+            v.backpropagate(reward);
+        }
+    }
+    monteCarloNode finalNode =  this.bestChild(1.4142f);
+    //performedActions.Add (finalNode.ParentAction);
+    return finalNode;
+}
+}
 
 public class Manager : MonoBehaviour 
 {
@@ -106,7 +268,7 @@ public class Manager : MonoBehaviour
     public Vector2 currentMousePos;
     public int currentTurn = 0;
     int monteItterations;
-    
+
 
     // scripts
     [SerializeField] HoverChecker hoverChecker;
@@ -158,7 +320,13 @@ public class Manager : MonoBehaviour
             if (changeTurn){
                 ChangeTurn(colour); 
             }
-            
+            if (ui.playerSelector.value == 1) {
+                Debug.Log("playerSelector == 1");
+                if (currentTurn == 1){
+                    StartCoroutine(StartAiMove());
+                }
+                
+            }
         }
         for (int i =0; i < 8; i++) {
             placeCheck check = CheckPlace(i, pos, colour, board);
@@ -240,7 +408,6 @@ public class Manager : MonoBehaviour
                 if (row[i] == colour) {
                     notFound = false;
                     placeCheck placecheck = new placeCheck(true, i , pos,dir,colour);
-                    
                     return placecheck;
                 }
                 else if (row[i] == oppCol) {
@@ -405,42 +572,26 @@ public class Manager : MonoBehaviour
             
     }
     }
-    public void createMonteNode() { // used to create a monteCarlo node based on the current state of the board
-        pieces[,] tempBoard = new pieces[8,8];
-        saveBoard(tempBoard, pieceArr);
-        monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2(-1,-1), monteItterations); 
-        monteCarloNode selectedNode = root.bestAction();
-        //Debug.Log (LogBoard(selectedNode.state.board));
-        //monteCarloNode newNode = selectedNode;
-        // while (newNode.parent != null) {
-        //     newNode = newNode.parent;
-        // }
-        //Debug.Log((newNode.ParentAction));
-        //Debug.Log(selectedNode.ParentAction);
-    
-    }
-    public void aiDifficultySelector(int difficulty) {
+
+    public void aiDifficultySelector(int difficulty) {// used to chage the amount of itterations done by the monte carlo tree search, depending on the difficulty dropdown
         int returnItterations = 0;
         switch ( difficulty ) {
             case 0:
-                returnItterations = 1000;
+                returnItterations = 50;
                 break;
             case 1:
-                returnItterations = 5000;
+                returnItterations = 1000;
                 break;
             case 2:
-                returnItterations =  10000;
+                returnItterations =  3000;
                 break;
             default:
             returnItterations = 500;
             break;
-            
-        
         }
-        
         monteItterations = returnItterations;
     }
-    public void AIMove() {
+    public void AIMove() {// used to call create an instance of the monte carlo class, and then get the best move from the instance and play that move.
         pieces[,] tempBoard = new pieces[8,8];
         saveBoard(tempBoard, pieceArr);
         monteCarloNode root = new monteCarloNode((new boardState(tempBoard, currentTurn)), null, new Vector2 (-1,-1), monteItterations);
@@ -450,199 +601,11 @@ public class Manager : MonoBehaviour
         mainPlace(selectedNode.ParentAction, currentTurn, pieceArr, true);
         
         //ChangeTurn(currentTurn);
-    }
+        }
+    IEnumerator StartAiMove(){
+        Debug.Log("startedAiMove");
+        yield return new WaitForSeconds(1);
+        AIMove();
 
-    public class monteCarloNode{ // class handling monte carlo nodes
-        Manager manager = new Manager();
-        public boardState state;
-        public monteCarloNode parent = null;
-        public Vector2 ParentAction = new Vector2 (-1,-1);
-        List <monteCarloNode> children = new List<monteCarloNode>();
-        int numberOfVisits = 0;
-        int[] results = new int[3];
-        bool hasGottenUntriedActions = false;
-        public List<Vector2> untriedActions = new List<Vector2>();
-        public int itterations = 100;
-        
-        List<Vector2> performedActions = new List<Vector2>();
-        int currentTurn;
-        
-        
-        
-        public monteCarloNode(boardState _state, monteCarloNode _parent, Vector2 _parentAction, int _Itterations ) { // constructer for the class
-            state = _state;
-            parent = _parent;
-            ParentAction = _parentAction;
-            itterations = _Itterations;
-        }
-        List<Vector2> untried_Actions() { // all of the possible actions on the board
-            //Debug.Log("called untriedActions");
-            // List<Vector2> allActions = new List<Vector2>(manager.getPossibleMoves(this.state.board, this.state.turn));
-            // foreach(Vector2 i in allActions) {
-            //     //Debug.Log("untried actions not performed: " +i);
-            //     foreach(Vector2 j in performedActions) {
-            //         if (i != j) {
-            //             Debug.Log("added" + i);
-            //             this.untriedActions.Add(i);
-            //         }
-            //         Debug.Log("untried actions not performed: " +i);
-            //         Debug.Log("untriedActions performed: " +j);
-            //     }
-            // }
-            // return untriedActions;
-            // untriedActions = new List<Vector2>(manager.getPossibleMoves(this.state.board, this.state.turn));
-            // for(int i = 0; i < this.untriedActions.Count; i++){
-                
-            //     foreach(Vector2 j in this.performedActions) {
-            //         //Debug.Log(j);
-            //         if (this.untriedActions[i] == j || this.untriedActions[i]== new Vector2(-1,-1)) {
-            //             untriedActions.RemoveAt(i);
-            //         }
-            //     }
-                //Debug.Log(untriedActions[i] + "untried actions ");
-            
-        
-            this.untriedActions = new List<Vector2>(manager.getPossibleMoves(state.board, state.turn));
-            int total = this.untriedActions.Count;
-            for (int i = 0; i < total; i++) {
-                untriedActions.Remove(new Vector2(-1,-1));
-            }
-            //Debug.Log(this.untriedActions.Count);
-            foreach(Vector2 v in this.untriedActions) {
-                //Debug.Log(v);
-            }
-            return untriedActions;
-            }
-
-        int q() { //returns the differnce betweens the wins and losses of the current move
-            int wins = this.results[1];
-            int losses = this.results[2];
-            return wins - losses;
-        }
-        int n() { // returns the number of visits a piece has
-            return this.numberOfVisits;
-        }
-        monteCarloNode expand() { // expands the tree by creating a new child node, and taking out of the untried actions, and adds that child to the list of children
-            //Debug.Log("called Expand");
-            if (!hasGottenUntriedActions) {
-                this.untriedActions = this.untried_Actions();
-                hasGottenUntriedActions = true;
-            }
-            Vector2 action = this.untriedActions[0];
-            this.untriedActions.RemoveAt(0);
-            monteCarloNode childNode = null;
-
-            pieces[,] board = new pieces[8,8];
-            boardState nextState =  new boardState(board,0);
-            for (int i = 0; i <8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    nextState.board[i,j] =  new pieces(null, this.state.board[i,j].colour, new Vector2 (i,j));
-                }
-            }
-            //nextState.board = this.state.board;
-            //nextState = nextState.saveState(nextState, this.state);
-            nextState = nextState.Move(action);
-            //Debug.Log(manager.LogBoard(nextState.board));
-            //Debug.Log(manager.LogBoard(this.state.board));
-            //Debug.Log(this.state.board == nextState.board);
-            nextState.turn = nextState.turn == 1 ? 2:1;
-            childNode = new monteCarloNode(nextState,this, action, itterations);
-            this.children.Add (childNode);
-            return childNode;
-        }
-        public bool isTerminalNode() { // returns true if the game is over
-            return this.state.isGameOver();
-        }
-        int rollout() { // used to simulate the game until the game is over from the current state.
-            boardState currentRolloutState = this.state;
-            while (!currentRolloutState.isGameOver()) {
-                Vector2[] possibleMoves = currentRolloutState.getLegalActions();
-                Vector2 action = this.rolloutPolicy(possibleMoves);
-                //Debug.Log(action);
-                currentRolloutState = currentRolloutState.Move(action);
-            }
-            return currentRolloutState.gameResult();
-            
-            
-        }
-        void backpropagate(int result) { // used to go back up the tree and change the results of the node.
-            this.numberOfVisits += 1;
-            this.results[result] += 1;
-            if (this.parent != null){
-                this.parent.backpropagate(result);
-            }
-        }
-
-        bool isFullyExpanded() { // used to check if the tree is fully expanded
-            return this.untriedActions.Count == 0;
-        }
-
-        monteCarloNode bestChild(float cParam = 0.1f) { // used to find the best child out of the list of children.
-            
-            //this.untriedActions = this.untried_Actions();            
-            double temp = -1000f;
-            int bestIndex = 0;
-            //Debug.Log(this.children.Count + " - child count");
-            List<double> choicesWeights = new List<double>();
-            foreach (monteCarloNode c in this.children) {
-                choicesWeights.Add((c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
-                //Debug.Log(c.n() + " n || q " + c.q() + " || " + (c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
-            }
-            
-            for (int i = 0; i < choicesWeights.Count; i++) { // finds the index of the largest number 
-                
-                if (temp <= choicesWeights[i]) {
-                    temp = choicesWeights[i];
-                    bestIndex = i;
-                }
-            }
-            //Debug.Log(choicesWeights.Count + " length");
-            //Debug.Log (children[0]);
-            //Debug.Log(bestIndex + " - index Chosen");
-            return children[bestIndex];
-        }
-
-        Vector2 rolloutPolicy(Vector2[] possibleMoves) { // used to randomly select a move out of the possible moves.
-            Vector2 possibleMove = possibleMoves[UnityEngine.Random.Range(0,possibleMoves.Length)];
-            return possibleMove;
-        }
-
-        monteCarloNode treePolicy() { // selected a node to rollout
-            monteCarloNode current = new monteCarloNode(null,null,new Vector2 (-1,-1), itterations);
-            current = this;
-            
-            //Debug.Log(this.isFullyExpanded() +"fullyExpanded");
-            if (!hasGottenUntriedActions) {
-                this.untriedActions = this.untried_Actions();
-                hasGottenUntriedActions = true;
-            }
-            // Debug.Log(this.isFullyExpanded() +"fullyExpanded");
-            // Debug.Log(this.state.isGameOver() +"is game Over");
-            //Debug.Log (manager.LogBoard(this.state.board) + "\n \n" +this.isFullyExpanded() +"fullyExpanded" + "\n \n " +this.state.isGameOver() +"is game Over");
-            //Debug.Log(this.ParentAction + "parent action");
-            while (! current.isTerminalNode()) {
-                if (!current.isFullyExpanded()) {
-                    return current.expand();
-                }else {
-                    current = current.bestChild();
-                }
-            }
-            return current;
-        }
-
-        public monteCarloNode bestAction() { // find the best action to play.
-            monteCarloNode v;
-            int simulationNum = itterations;
-            for (int i = 0; i < simulationNum; i++) {
-                v = this.treePolicy();
-                if (v != null) {
-                    int reward = v.rollout();
-                    v.backpropagate(reward);
-                }
-            }
-            monteCarloNode finalNode =  this.bestChild(1.4142f);
-            //performedActions.Add (finalNode.ParentAction);
-            return finalNode;
-        }
     }
     }

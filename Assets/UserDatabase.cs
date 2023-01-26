@@ -8,7 +8,7 @@ public class UserDatabase : MonoBehaviour
 {
     public string userName;
     public string pass;
-    int userId;
+    public int userId;
     int maxId;
     string adminUserName = "ADMIN";
     string adminPass = "admin";
@@ -20,10 +20,12 @@ public class UserDatabase : MonoBehaviour
         IDbConnection dbConnection = OpenDatabase(); 
         IDbCommand dbCommandCreateTable = dbConnection.CreateCommand();
         dbCommandCreateTable.CommandText = "CREATE TABLE IF NOT EXISTS Users (Id INTEGER PRIMARY KEY, Username TEXT, Password TEXT)"; 
-        dbCommandCreateTable.ExecuteReader(); 
+        dbCommandCreateTable.ExecuteScalar(); 
         IDbCommand dbCommandInsertValue = dbConnection.CreateCommand();
         dbCommandInsertValue.CommandText = "INSERT OR REPLACE INTO Users (Id, Username, Password) VALUES (1, '" + adminUserName + "', '" + adminPass +"')";
-        dbCommandInsertValue.ExecuteReader(); 
+        dbCommandInsertValue.ExecuteScalar(); 
+        dbCommandCreateTable.CommandText = "CREATE TABLE IF NOT EXISTS leaderboard (Id INTEGER PRIMARY KEY, Wins INTEGER, Losses INTEGER)";
+        dbCommandCreateTable.ExecuteScalar();
         dbConnection.Close();
     }
     IDbConnection OpenDatabase() 
@@ -104,5 +106,23 @@ public class UserDatabase : MonoBehaviour
         }
         dbConnection.Close();
         return userId;
+    }
+    public Vector2 getwl(int userId) {
+        int wins = 0;
+        int losses = 0;
+        IDbConnection dbConnection = OpenDatabase();
+        IDbCommand command = dbConnection.CreateCommand();
+        command.CommandText = "SELECT Wins, Losses From leaderboard WHERE Id = '" + userId.ToString() + "'";
+        IDataReader dataReader = command.ExecuteReader();
+        while (dataReader.Read()){
+            wins =  dataReader.GetInt32(0);
+            losses = dataReader.GetInt32(1);
+        }
+        return new Vector2(wins,losses);
+    }
+    public void insertWins(int wl,int userId) {
+        IDbConnection dbConnection = OpenDatabase();
+        IDbCommand command = dbConnection.CreateCommand();
+        command.CommandText = "INSERT INTO leaderboard (Wins,Losses)";
     }
 }

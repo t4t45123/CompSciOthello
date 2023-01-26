@@ -20,6 +20,7 @@ public class UImanager : MonoBehaviour
     //Script refernece
     [SerializeField] Manager boardManager;
     [SerializeField] AccountManager accountManager;
+    [SerializeField] UserDatabase userDatabase;
     public float errorDisplayDuration = 5f;
     TextMeshProUGUI errorText;
     public TextMeshProUGUI winText;
@@ -102,6 +103,9 @@ public class UImanager : MonoBehaviour
     }
     public void Logboard() { // used to log the board for debugging purposes
         Debug.Log (boardManager.LogBoard(boardManager.pieceArr));
+    }
+    public void LogWins(){
+        Debug.Log(userDatabase.getwl(userDatabase.userId));
     }
     public void DisplayErrorText (string message) {
         errorText.color = new Color(255, 0,0,255);
