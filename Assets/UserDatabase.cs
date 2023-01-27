@@ -120,9 +120,10 @@ public class UserDatabase : MonoBehaviour
         }
         return new Vector2(wins,losses);
     }
-    public void insertWins(int wl,int userId) {
+    public void insertWins(int wl,int userId, ){
         IDbConnection dbConnection = OpenDatabase();
         IDbCommand command = dbConnection.CreateCommand();
-        command.CommandText = "INSERT INTO leaderboard (Wins,Losses)";
+        command.CommandText = "INSERT INTO leaderboard (Wins,Losses) VALUES (" + getwl(userId).x + ", " + getwl(userId).y + ")";
+        command.ExecuteScalar();                    
     }
-}
+} 

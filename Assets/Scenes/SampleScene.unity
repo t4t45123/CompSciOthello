@@ -7802,6 +7802,7 @@ MonoBehaviour:
   boardParent: {fileID: 1221147796}
   boardManager: {fileID: 808759789}
   accountManager: {fileID: 1865623633}
+  userDatabase: {fileID: 1629343359}
   errorDisplayDuration: 5
   winText: {fileID: 43897273}
   lastDisplayTime: 0
@@ -8363,7 +8364,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1543380888
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8405,7 +8406,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1570346239
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8490,7 +8491,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Run Monte
+  m_text: Los wins
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8598,6 +8599,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   userName: 1
   pass: 1
+  userId: 0
 --- !u!4 &1629343360
 Transform:
   m_ObjectHideFlags: 0
@@ -10345,9 +10347,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 808759789}
-        m_TargetAssemblyTypeName: Manager, Assembly-CSharp
-        m_MethodName: createMonteNode
+      - m_Target: {fileID: 1448848125}
+        m_TargetAssemblyTypeName: UImanager, Assembly-CSharp
+        m_MethodName: LogWins
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

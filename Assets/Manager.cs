@@ -577,7 +577,7 @@ public class Manager : MonoBehaviour
         int returnItterations = 0;
         switch ( difficulty ) {
             case 0:
-                returnItterations = 50;
+                returnItterations = 5;
                 break;
             case 1:
                 returnItterations = 1000;
