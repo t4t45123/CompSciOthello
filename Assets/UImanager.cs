@@ -15,6 +15,7 @@ public class UImanager : MonoBehaviour
     [SerializeField] GameObject adminButtonParent;
     [SerializeField] GameObject difficultyParent;
     [SerializeField] GameObject boardParent;
+    [SerializeField] GameObject leaderParent;
 
 
     //Script refernece
@@ -57,10 +58,15 @@ public class UImanager : MonoBehaviour
         PreGameMenu.SetActive(false);
         playMenu.SetActive(false);
         boardParent.SetActive(false);
+        leaderParent.SetActive(false);
     }
     public void EnableLoginScreen() { // this is used to enable the login screen at the start of the game
         DisableAllScreens();
         loginScreen.SetActive(true);
+    }
+    public void EnableLeaderBoard() {
+        DisableAllScreens();
+        leaderParent.SetActive(true);
     }
     public void EnableMainMenu() { // used to enable the main menu this is called when the player logs in
     DisableAllScreens();
@@ -69,6 +75,13 @@ public class UImanager : MonoBehaviour
     public void EnablePreGameMenu() { // used to enable the pre-game menu this is called when the player presses the play button in the main menu
         DisableAllScreens();
         PreGameMenu.SetActive(true);
+    }
+    public void insertWin() {
+        userDatabase.insertWins(1, 1);
+        Debug.Log(userDatabase.getwl(0));
+    }
+    public void getLeader() {
+        userDatabase.returnAllWl();
     }
     public void EnablePlayMenu() { // used to display the play menu and also show the admin buttons is the admin account is logged in
         DisableAllScreens();

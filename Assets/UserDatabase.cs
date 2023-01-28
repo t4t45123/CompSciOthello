@@ -118,12 +118,53 @@ public class UserDatabase : MonoBehaviour
             wins =  dataReader.GetInt32(0);
             losses = dataReader.GetInt32(1);
         }
+        dbConnection.Close();
         return new Vector2(wins,losses);
     }
-    public void insertWins(int wl,int userId, ){
+    public void insertWins(int wl,int userId){
+        int wins = 0;
+        int losses = 0;
         IDbConnection dbConnection = OpenDatabase();
         IDbCommand command = dbConnection.CreateCommand();
-        command.CommandText = "INSERT INTO leaderboard (Wins,Losses) VALUES (" + getwl(userId).x + ", " + getwl(userId).y + ")";
+        switch (wl) {
+            case 0:
+            wins = 1;
+            break;
+            case 1:
+            losses = 1;
+            break;
+        }
+        command.CommandText = "INSERT OR REPLACE INTO leaderboard (Id,Wins,Losses) VALUES ("+ userId + ","+ (getwl(userId).x + wins) + ", " + (getwl(userId).y+losses) +  ")";
         command.ExecuteScalar();                    
+        dbConnection.Close();
+    }
+    public string returnAllWl() {
+        string ids = "";
+        string wins = "";
+        string losses = "";
+        IDbConnection dbConnection = OpenDatabase();
+        IDbCommand command = dbConnection.CreateCommand();
+        command.CommandText = "SELECT * FROM leaderboard ORDER by Wins DESC";
+        IDataReader reader = command.ExecuteReader();
+        while (reader.Read()) {
+            ids = (ids + reader.GetInt32(0).ToString() + ",");
+            wins = (wins + reader.GetInt32(1).ToString() + ",");
+            losses = (losses + reader.GetInt32(2).ToString() + ",");
+        }
+        dbConnection.Close();
+        Debug.Log (ids + " || "+ wins + " || " + losses);
+        return (ids + " || "+ wins + " || " + losses);
+        
+    }
+    public string GetUserFromID(string id) {
+        string user = "";
+        IDbConnection dbConnection = OpenDatabase();
+        IDbCommand command = dbConnection.CreateCommand();
+        command.CommandText = "SELECT Username FROM USERS WHERE (Id = '" + id + "')";
+        IDataReader reader = command.ExecuteReader();
+        while (reader.Read()) {
+            user = reader.GetString(0);
+        }
+        return user;
     }
 } 

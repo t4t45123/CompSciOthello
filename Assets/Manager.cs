@@ -272,6 +272,7 @@ public class Manager : MonoBehaviour
 
     // scripts
     [SerializeField] HoverChecker hoverChecker;
+    [SerializeField] UserDatabase database;
     boardState state;
     monteCarloNode MonteCarloNode;
     [SerializeField] UImanager ui;
@@ -285,7 +286,7 @@ public class Manager : MonoBehaviour
         }
         posSetter();
         //Debug.Log(getPossibleMoveCount(getPossibleMoves(pieceArr,currentTurn), currentTurn, pieceArr));
-        winCheck(pieceArr,currentTurn);
+        StartCoroutine (winCheck(pieceArr,currentTurn));
         ui.updateCountAndTurn(getPieceCount(pieceArr, 0), getPieceCount(pieceArr,1), currentTurn);
         aiDifficultySelector(ui.difficultyDropdown.value);
     }
@@ -566,9 +567,17 @@ public class Manager : MonoBehaviour
         }
     return count;
     }
-    void winCheck(pieces[,] board, int colour) { // win check function checks for if a player has won and if so then displays that the player has won and after 5 seconds take them back to the pre game menu
-        if (getPossibleMoveCount(getPossibleMoves(board,colour),colour,board) == 0 & ui.winTextActive == false) {
-            StartCoroutine(ui.displayWinText(colour));
+    IEnumerator winCheck(pieces[,] board, int colour) { // win check function checks for if a player has won and if so then displays that the player has won and after 5 seconds take them back to the pre game menu
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+        if (getPossibleMoveCount(getPossibleMoves(board,currentTurn),currentTurn,board) == 0 & ui.winTextActive == false) {
+            
+            StartCoroutine(ui.displayWinText((getPieceCount(board,currentTurn) > getPieceCount(board, currentTurn == 1 ? 0 : 1)) ? currentTurn: currentTurn ==1 ? 0: 1));
+            if (ui.playerSelector.value == 1) {
+                database.insertWins((getPieceCount(board,0) > getPieceCount(board, 1)) ?0: 1 ,database.userId);
+            }
+            
             
     }
     }
@@ -577,7 +586,7 @@ public class Manager : MonoBehaviour
         int returnItterations = 0;
         switch ( difficulty ) {
             case 0:
-                returnItterations = 5;
+                returnItterations = 50;
                 break;
             case 1:
                 returnItterations = 1000;
