@@ -27,17 +27,15 @@ public class boardState { // class handling board states for the monete carlo tr
         boardState temp = new boardState ((manager.placeOnArray(pos, this.turn, this.board)), this.turn);
         return temp;
     }
-    public bool isGameOver() {
+    public bool isGameOver() { // checks if the game is over in the current state 
 
-        //Debug.Log (manager.LogBoard(this.board));
-        //Debug.Log("moveAmount" + manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board));
         if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),this.turn,this.board) == 0) {
             return true;
         }else {
             return false;
         }
     }
-    public Vector2[] getLegalActions() {
+    public Vector2[] getLegalActions() { // gets all of the possible moes in the current state
         Vector2[] tempArr = manager.getPossibleMoves(this.board, this.turn);
         Vector2[] legalActions = new Vector2[64];
         int i = 0;
@@ -55,7 +53,7 @@ public class boardState { // class handling board states for the monete carlo tr
         
         return legalActions;
     }
-    public int gameResult() {
+    public int gameResult() { // returns an integer showing the result of the game based on a condition
         if (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn),turn,this.board) > (manager.getPossibleMoveCount(manager.getPossibleMoves(this.board,this.turn == 1 ? 0: 1),this.turn == 1 ? 0: 1,this.board))) {
             return 1;
         }else {
@@ -125,12 +123,7 @@ public class boardState { // class handling board states for the monete carlo tr
                     nextState.board[i,j] =  new pieces(null, this.state.board[i,j].colour, new Vector2 (i,j));
                 }
             }
-            //nextState.board = this.state.board;
-            //nextState = nextState.saveState(nextState, this.state);
             nextState = nextState.Move(action);
-            //Debug.Log(manager.LogBoard(nextState.board));
-            //Debug.Log(manager.LogBoard(this.state.board));
-            //Debug.Log(this.state.board == nextState.board);
             nextState.turn = nextState.turn == 1 ? 2:1;
             childNode = new monteCarloNode(nextState,this, action, itterations);
             this.children.Add (childNode);
@@ -182,9 +175,6 @@ monteCarloNode bestChild(float cParam = 0.1f) { // used to find the best child o
             bestIndex = i;
         }
     }
-    //Debug.Log(choicesWeights.Count + " length");
-    //Debug.Log (children[0]);
-    //Debug.Log(bestIndex + " - index Chosen");
     return children[bestIndex];
 }
 
@@ -307,13 +297,13 @@ public class Manager : MonoBehaviour
         pieceMat[0] = whiteMat;
         pieceMat[1] = blackMat;
     }
-    public GameObject instancePiece(Vector2 pos, int colour, pieces[,] board) {
+    public GameObject instancePiece(Vector2 pos, int colour, pieces[,] board) { // used to instance a piece on the board and on the array without changing any of the turns or having any conditions
         GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f, pos.y), Quaternion.identity, colour == 0 ? whiteParent : blackParent); // creates a new peice based on the inputed location.
         lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; // sets the colour of the piece to the colour inputed.
         board[(int)pos.x,(int)pos.y] = new pieces(lastCreated, colour,pos);
         return lastCreated;
     }
-    public void mainPlace(Vector2 pos, int colour, pieces[,] board, bool changeTurn) {
+    public void mainPlace(Vector2 pos, int colour, pieces[,] board, bool changeTurn) {// the main place function that uses the confitions, and changes the turn when a piece is placed.
         if (CheckPlace360(pos, colour,board)) {
             GameObject lastCreated = Instantiate(piece ,new Vector3 ( pos.x,1.5f,pos.y),Quaternion.identity, colour == 0? whiteParent : blackParent);
             lastCreated.GetComponent<Renderer>().material = pieceMat[colour]; 
@@ -338,7 +328,7 @@ public class Manager : MonoBehaviour
         
     }
     
-    public pieces[,] placeOnArray(Vector2 pos, int colour, pieces[,] board) {
+    public pieces[,] placeOnArray(Vector2 pos, int colour, pieces[,] board) { // used to place but not instance a piece
         if (pos.x >= 0 & pos.x < 8 & pos.y >= 0 & pos.y <8) {
 
             
@@ -438,7 +428,7 @@ public class Manager : MonoBehaviour
 
         }
     }
-    void changePieceArr(placeCheck check, pieces[,] board) {
+    void changePieceArr(placeCheck check, pieces[,] board) { // used to update the piece array based on the 
         Vector2 tempPos = check.startPos;
         for (int i = 0; i < check.endPos; i++) {
             board[(int)tempPos.x, (int)tempPos.y].colour = check.Colour;
@@ -611,7 +601,7 @@ public class Manager : MonoBehaviour
         
         //ChangeTurn(currentTurn);
         }
-    IEnumerator StartAiMove(){
+    IEnumerator StartAiMove(){ // called the ai move function after some time.
         Debug.Log("startedAiMove");
         yield return new WaitForSeconds(1);
         AIMove();

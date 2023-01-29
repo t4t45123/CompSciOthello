@@ -5,32 +5,16 @@ using TMPro;
 
 public class LeaderBoardManager : MonoBehaviour
 {
-    class leaderData {
-        int ids;
-        int wins;
-        int losses;
-        leaderData (int id, int win, int loss) {
-            ids = id;
-            wins = win;
-            losses = loss;
-        }
-    }
+
     [SerializeField] UserDatabase database;
     [SerializeField] TMP_Text _winText;
     [SerializeField] TMP_Text _lossText;
     [SerializeField] TMP_Text _userText;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
     void Update()
     {
         splitData();
     }
-    void splitData() {
+    void splitData() { // splits the data from retun all wl function in the user database script, and places all of the text into text on the leaderboard
         string userText = "";
         string winText = "";
         string lossesText = "";

@@ -28,7 +28,7 @@ public class UserDatabase : MonoBehaviour
         dbCommandCreateTable.ExecuteScalar();
         dbConnection.Close();
     }
-    IDbConnection OpenDatabase() 
+    IDbConnection OpenDatabase() // opens the database connection
     {
         // Open a connection to the database.
         string dbUri = "URI=file:" + Application.persistentDataPath + @"\userData.db"; 
@@ -107,7 +107,7 @@ public class UserDatabase : MonoBehaviour
         dbConnection.Close();
         return userId;
     }
-    public Vector2 getwl(int userId) {
+    public Vector2 getwl(int userId) { // gets wins and the losses from a specific user id 
         int wins = 0;
         int losses = 0;
         IDbConnection dbConnection = OpenDatabase();
@@ -121,7 +121,7 @@ public class UserDatabase : MonoBehaviour
         dbConnection.Close();
         return new Vector2(wins,losses);
     }
-    public void insertWins(int wl,int userId){
+    public void insertWins(int wl,int userId){ // insets a win or loss into the database based on a user id
         int wins = 0;
         int losses = 0;
         IDbConnection dbConnection = OpenDatabase();
@@ -138,7 +138,7 @@ public class UserDatabase : MonoBehaviour
         command.ExecuteScalar();                    
         dbConnection.Close();
     }
-    public string returnAllWl() {
+    public string returnAllWl() { // retunrs all the users, wins and losses based on the id
         string ids = "";
         string wins = "";
         string losses = "";
@@ -156,7 +156,7 @@ public class UserDatabase : MonoBehaviour
         return (ids + " || "+ wins + " || " + losses);
         
     }
-    public string GetUserFromID(string id) {
+    public string GetUserFromID(string id) {// gets the user string from the id 
         string user = "";
         IDbConnection dbConnection = OpenDatabase();
         IDbCommand command = dbConnection.CreateCommand();

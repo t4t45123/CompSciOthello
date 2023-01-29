@@ -64,7 +64,7 @@ public class UImanager : MonoBehaviour
         DisableAllScreens();
         loginScreen.SetActive(true);
     }
-    public void EnableLeaderBoard() {
+    public void EnableLeaderBoard() { // shows the leaderboard when the button is pressed
         DisableAllScreens();
         leaderParent.SetActive(true);
     }
