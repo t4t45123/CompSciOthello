@@ -32,7 +32,7 @@ public class LeaderBoardManager : MonoBehaviour
         foreach (string loss in losses) {
             lossesText = (lossesText + "\n" + loss);
         }
-        Debug.Log("users:" +userText + "\nwins:" + winText + "\n losses:" + lossesText);
+        //Debug.Log("users:" +userText + "\nwins:" + winText + "\n losses:" + lossesText);
         _winText.text = winText;
         _lossText.text = lossesText;
         _userText.text = userText;

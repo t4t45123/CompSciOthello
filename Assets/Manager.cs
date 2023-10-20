@@ -106,30 +106,44 @@ public class boardState { // class handling board states for the monete carlo tr
         int n() { // returns the number of visits a piece has
             return this.numberOfVisits;
         }
-        monteCarloNode expand() { // expands the tree by creating a new child node, and taking out of the untried actions, and adds that child to the list of children
-            //Debug.Log("called Expand");
-            if (!hasGottenUntriedActions) {
-                this.untriedActions = this.untried_Actions();
-                hasGottenUntriedActions = true;
-            }
+    public monteCarloNode expand()
+    {
+        if (!hasGottenUntriedActions)
+        {
+            this.untriedActions = this.untried_Actions();
+            hasGottenUntriedActions = true;
+        }
+
+        // Create a child node for the first untried action
+        if (untriedActions.Count > 0)
+        {
             Vector2 action = this.untriedActions[0];
             this.untriedActions.RemoveAt(0);
-            monteCarloNode childNode = null;
 
-            pieces[,] board = new pieces[8,8];
-            boardState nextState =  new boardState(board,0);
-            for (int i = 0; i <8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    nextState.board[i,j] =  new pieces(null, this.state.board[i,j].colour, new Vector2 (i,j));
+            pieces[,] board = new pieces[8, 8];
+            boardState nextState = new boardState(board, 0);
+
+            // Clone the current board to create the next state
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    nextState.board[i, j] = new pieces(null, this.state.board[i, j].colour, new Vector2(i, j));
                 }
             }
+
             nextState = nextState.Move(action);
-            nextState.turn = nextState.turn == 1 ? 2:1;
-            childNode = new monteCarloNode(nextState,this, action, itterations);
-            this.children.Add (childNode);
+            nextState.turn = nextState.turn == 1 ? 2 : 1;
+
+            monteCarloNode childNode = new monteCarloNode(nextState, this, action, itterations);
+            this.children.Add(childNode);
+
             return childNode;
         }
-        public bool isTerminalNode() { // returns true if the game is over
+
+        return null;
+    }
+    public bool isTerminalNode() { // returns true if the game is over
             return this.state.isGameOver();
         }
         int rollout() { // used to simulate the game until the game is over from the current state.
@@ -161,11 +175,11 @@ monteCarloNode bestChild(float cParam = 0.1f) { // used to find the best child o
     //this.untriedActions = this.untried_Actions();            
     double temp = -1000f;
     int bestIndex = 0;
-    //Debug.Log(this.children.Count + " - child count");
+    Debug.Log(this.children.Count + " - child count");
     List<double> choicesWeights = new List<double>();
     foreach (monteCarloNode c in this.children) {
         choicesWeights.Add((c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
-        //Debug.Log(c.n() + " n || q " + c.q() + " || " + (c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
+        Debug.Log(c.n() + " n || q " + c.q() + " || " + (c.q() / c.n()) + cParam * Mathf.Sqrt((2*Mathf.Log(this.n()) / c.n())));
     }
     
     for (int i = 0; i < choicesWeights.Count; i++) { // finds the index of the largest number 

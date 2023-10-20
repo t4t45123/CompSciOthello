@@ -5,5 +5,4 @@ using UnityEngine;
 public class Cell : MonoBehaviour
 {
     public Vector2 cellPos; // position of the cell
-    
 }

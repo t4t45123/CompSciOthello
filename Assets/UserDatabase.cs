@@ -152,7 +152,7 @@ public class UserDatabase : MonoBehaviour
             losses = (losses + reader.GetInt32(2).ToString() + ",");
         }
         dbConnection.Close();
-        Debug.Log (ids + " || "+ wins + " || " + losses);
+        //Debug.Log (ids + " || "+ wins + " || " + losses);
         return (ids + " || "+ wins + " || " + losses);
         
     }
